@@ -3,9 +3,9 @@ from typing import List, NamedTuple, Optional, Tuple, Union
 
 from warnings import warn
 
-from .search import Search
-from .parse_content import check_integrity, check_field_consistency, make_search_summary, listify
-from .checks import check_parameter_value
+from ..superclasses.search import Search
+from ..utils.parse_content import check_integrity, check_field_consistency, listify, make_search_summary
+from ..utils.checks import check_parameter_value
 
 class AuthorSearch(Search):
     @property

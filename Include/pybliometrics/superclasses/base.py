@@ -5,9 +5,9 @@ from math import ceil
 from time import localtime, strftime, time
 from typing import Dict, Optional
 
-from .exception import ScopusQueryError
-from .get_content import get_content
-from .constants import SEARCH_MAX_ENTRIES
+from ..scopus.exception import ScopusQueryError
+from ..utils.get_content import get_content
+from ..utils.constants import SEARCH_MAX_ENTRIES
 from tqdm import tqdm
 
 

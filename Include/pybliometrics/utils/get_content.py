@@ -2,7 +2,7 @@ from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from .exception import *
+from ..scopus.exception import *
 from .startup import config
 
 # Define user agent string for HTTP requests

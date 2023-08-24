@@ -6,12 +6,11 @@ from json import loads
 
 from .author_search import AuthorSearch
 from .scopus_search import ScopusSearch
-from .retrieval import Retrieval
-from .parse_content import chained_get, filter_digits, get_link,\
-    html_unescape, listify, make_int_if_possible,\
-    parse_affiliation, parse_date_created
-from .checks import check_parameter_value
-from .get_content import get_content
+from ..superclasses.retrieval import Retrieval
+from ..utils.parse_content import chained_get, filter_digits, get_link, html_unescape, \
+    listify, make_int_if_possible, parse_affiliation, parse_date_created
+from ..utils.checks import check_parameter_value
+from ..utils.get_content import get_content
 
 
 class AuthorRetrieval(Retrieval):
@@ -95,7 +94,7 @@ class AuthorRetrieval(Retrieval):
     @property
     def eid(self) -> Optional[str]:
         """The EID of the author.  If it differs from the one provided,
-        pybliometrics will throw a warning informing the user about
+        . will throw a warning informing the user about
         author profile merges.
         """
         return self._json['coredata'].get('eid')

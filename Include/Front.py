@@ -30,7 +30,7 @@ from datetime import datetime
 
 # Utilisation de QT pour la création de l'Interface Homme-Machine (IHM ou HMI en anglais)
 from PySide6.QtWidgets import QMessageBox, QTextEdit, QDialog, QVBoxLayout, QLabel, QWidget, QPlainTextEdit, QTabWidget
-from PySide6.QtGui import QFont, QIcon, QPixmap, QTextCursor, QCursor
+from PySide6.QtGui import QFont, QIcon, QPixmap, QCursor
 from PySide6.QtCore import Qt
 
 
@@ -108,7 +108,7 @@ class AchievedMessageBox(QMessageBox):
         """)
 
         # Définie l'icone, le titre mais aussi le texte du contenu de la Box
-        from .startup import DOCS_PATH
+        from .pybliometrics.utils.startup import DOCS_PATH
         self.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + "/../Logos/CN_Logo_Modified.png")) 
         self.setWindowTitle("Rapport réalisé")
         self.setText(f"Félicitations!\n\nRapport d'analyse bibliométrique créé avec succès.\n\nLe rapport est enregistré par défaut dans le répertoire suivant:\n{DOCS_PATH[0]}\n\nCe rapport a été généré en: {int(time/60)}min {time%60}s")

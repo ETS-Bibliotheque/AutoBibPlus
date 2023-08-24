@@ -30,11 +30,11 @@ import pandas as pd
 import win32com.client as win32
 
 from datetime import datetime
-from .abstract_citation import CitationOverview
-from .author_retrieval import AuthorRetrieval
-from .author_search import AuthorSearch
-from .author_lookup import AuthorLookup
-from .startup import DOCS_PATH
+from .pybliometrics.scopus.abstract_citation import CitationOverview
+from .pybliometrics.scopus.author_retrieval import AuthorRetrieval
+from .pybliometrics.scopus.author_search import AuthorSearch
+from .pybliometrics.scival.author_lookup import AuthorLookup
+from .pybliometrics.utils.startup import DOCS_PATH
 
 from PySide6.QtWidgets import QPlainTextEdit
 

@@ -1,10 +1,10 @@
 from collections import namedtuple
 from typing import List, NamedTuple, Optional, Tuple, Union
 
-from .search import Search
-from .parse_content import make_search_summary, listify, get_freetoread, deduplicate,\
-    check_integrity, check_field_consistency
-from .checks import check_parameter_value
+from ..superclasses.search import Search
+from ..utils.parse_content import check_integrity, check_field_consistency, deduplicate,\
+    get_freetoread, listify, make_search_summary
+from ..utils.checks import check_parameter_value
 
 
 class ScopusSearch(Search):

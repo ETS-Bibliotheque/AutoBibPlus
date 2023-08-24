@@ -4,9 +4,9 @@ from hashlib import md5
 from typing import List, NamedTuple, Optional, Tuple, Union
 from warnings import warn
 
-from .retrieval import Retrieval
-from .parse_content import chained_get
-from .checks import check_parameter_value
+from ..superclasses.retrieval import Retrieval
+from ..utils.parse_content import chained_get
+from ..utils.checks import check_parameter_value
 
 
 class CitationOverview(Retrieval):

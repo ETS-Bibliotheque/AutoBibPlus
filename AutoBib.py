@@ -46,8 +46,8 @@ text_style_question = '"color: #0C5E31"'
 # Fonction permettant de checker la présence d'un fichier de configuration si non la création se fait alors (reprise de la bibliothèque "pybliometrics"), également fonction d'initialisation
 def check_create_config(console: QPlainTextEdit, response: str, keys: list = None, first_time: bool = False):
     import configparser
-    from Include.constants import CONFIG_FILE
-    from Include.create_config import create_config
+    from Include.pybliometrics.utils.constants import CONFIG_FILE
+    from Include.pybliometrics.utils.create_config import create_config
 
     # Read/create config file (with fixture for RTFD.io)
     config = configparser.ConfigParser()
@@ -109,7 +109,7 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
             return False, keys
         
         # Suppression du fichier de configuration non-abouti puis création du fichier complet
-        subprocess.run("del %userprofile%\.config\pybliometrics.cfg", shell=True)
+        subprocess.run("del %userprofile%\\.config\\pybliometrics.cfg", shell=True)
         config = create_config(keys=[keys[0]], insttoken=keys[1], docs_path=response.strip())
 
         # Gestion de l'affichage de la zone de text (effacage puis affichage des diverses informations)
@@ -276,7 +276,7 @@ class ConsoleWindow(QMainWindow):
         from Include.Tools import homonyme, selection_homonyme, tab_graph_Collab, \
             selection_types_de_documents, donnees_documents_graph_citations, selection_plages_annees, tab_graph_citations, \
             tab_graph_publications, Excel_part1, Excel_part2, valeurs_encadre, selection_2_types_docs, tab_graph_SNIP
-        from Include.author_search import AuthorSearch
+        from Include.pybliometrics.scopus.author_search import AuthorSearch
         
         # Afficher le message de chargement
         self.loading_dialog.show()
@@ -288,137 +288,137 @@ class ConsoleWindow(QMainWindow):
         font_metrics = QFontMetrics(QFont("Consolas", 11))
         width_char = font_metrics.averageCharWidth()
 
-        # Test l'exécution du script de l'état courant et test la validité des transitions possibles sinon message d'erreur
-        try :
-            # Machine à états
-            match self.state:
-                # État initial : recherche d'un chercheur par son nom et son prénom
-                case 0:
-                    # Validation du format de la requête de l'utilisateur
-                    if ',' in self.response and not self.response.split(",")[1] =='':
-                        last_name = self.response.split(",")[0]
-                        first_name = self.response.split(",")[1]
-                    else:
-                        self.console.append('<p style={}>! Manque du séparateur (virgule) et/ou du prénom du chercheur</p>'.format(text_style_warning))
-                        self.console.append('')
-                        self.console.append('<p style={}>● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</p>'.format(text_style_question))
-                        # Fermer le message de chargement
-                        self.loading_dialog.close()
-                        return
-                    
-                    # Lancement du timer
-                    self.timer.start()
+        # # Test l'exécution du script de l'état courant et test la validité des transitions possibles sinon message d'erreur
+        # try :
+        # Machine à états
+        match self.state:
+            # État initial : recherche d'un chercheur par son nom et son prénom
+            case 0:
+                # Validation du format de la requête de l'utilisateur
+                if ',' in self.response and not self.response.split(",")[1] =='':
+                    last_name = self.response.split(",")[0]
+                    first_name = self.response.split(",")[1]
+                else:
+                    self.console.append('<p style={}>! Manque du séparateur (virgule) et/ou du prénom du chercheur</p>'.format(text_style_warning))
+                    self.console.append('')
+                    self.console.append('<p style={}>● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</p>'.format(text_style_question))
+                    # Fermer le message de chargement
+                    self.loading_dialog.close()
+                    return
+                
+                # Lancement du timer
+                self.timer.start()
 
-                    # Recherche du chercheur
-                    self.search = AuthorSearch('AUTHLAST(' + last_name + ') and AUTHFIRST(' + first_name + ')', refresh=True)
-                    self.infos_API['AuthorSearch'].update({key: self.search._header[key] for key in self.search._header if key in self.infos_API['AuthorSearch']})
-                    
-                    # Incrémentation en fonction du nombre d'homonyme
-                    self.state += homonyme(self.search, self.console, int(self.width()/width_char)-10)                
+                # Recherche du chercheur
+                self.search = AuthorSearch('AUTHLAST(' + last_name + ') and AUTHFIRST(' + first_name + ')', refresh=True)
+                self.infos_API['AuthorSearch'].update({key: self.search._header[key] for key in self.search._header if key in self.infos_API['AuthorSearch']})
+                
+                # Incrémentation en fonction du nombre d'homonyme
+                self.state += homonyme(self.search, self.console, int(self.width()/width_char)-10)                
 
-                    # S'il n'y a pas d'homonymes
-                    self._rechercheSurChercheur() if self.state == 2 else None
+                # S'il n'y a pas d'homonymes
+                self._rechercheSurChercheur() if self.state == 2 else None
 
-                # État 1 : cas où la recherche a mené à des homonymes, il faut alors choisir l'un d'entre eux      
-                case 1:
-                    # Vérifie si le ou les numéros d'index sont correctes
-                    if selection_homonyme(self.response, self.search, self.console):
-                        self.state += 1
-                        self._rechercheSurChercheur(choix=int(self.response))
+            # État 1 : cas où la recherche a mené à des homonymes, il faut alors choisir l'un d'entre eux      
+            case 1:
+                # Vérifie si le ou les numéros d'index sont correctes
+                if selection_homonyme(self.response, self.search, self.console):
+                    self.state += 1
+                    self._rechercheSurChercheur(choix=int(self.response))
 
-                # État 2 : certains documents doivent être exclus et export des premières données vers le doc Excel
-                case 2:
-                    # Séparer les types de documents sélectionnés par l'utilisateur
-                    selected_types = self.response.split(',')
-                    selected_types = [element.strip() for element in selected_types]
-    
-                    # Vérifie la conformité de la commande de l'utilisateur
-                    if len(selected_types) == 1 and selected_types[0] == "":
-                        self.index_list = self.df_doc_type.index.tolist()
-                    elif selection_types_de_documents(selected_types, len(self.df_doc_type), self.console):
-                        # Obtenir une liste d'entier puis mettre à jour la liste
-                        selected_types = [int(x) for x in selected_types]
-                        self.index_list = [x for x in self.df_doc_type.index.tolist() if x not in selected_types]
-                    else:
-                        self._affichageQuestions(1)
-                        return
-                    
+            # État 2 : certains documents doivent être exclus et export des premières données vers le doc Excel
+            case 2:
+                # Séparer les types de documents sélectionnés par l'utilisateur
+                selected_types = self.response.split(',')
+                selected_types = [element.strip() for element in selected_types]
+
+                # Vérifie la conformité de la commande de l'utilisateur
+                if len(selected_types) == 1 and selected_types[0] == "":
+                    self.index_list = self.df_doc_type.index.tolist()
+                elif selection_types_de_documents(selected_types, len(self.df_doc_type), self.console):
+                    # Obtenir une liste d'entier puis mettre à jour la liste
+                    selected_types = [int(x) for x in selected_types]
+                    self.index_list = [x for x in self.df_doc_type.index.tolist() if x not in selected_types]
+                else:
+                    self._affichageQuestions(1)
+                    return
+                
+                self.state += 1
+
+                # Calcul, mise en forme des données pour le graphique des citations
+                self.docs_list, self.selected_eids_list, self.years = donnees_documents_graph_citations(self.console, self.au_retrieval, self.df_doc_type, self.index_list)
+                self.df, self.nom_prenom, header = tab_graph_citations(self.console, self.au_retrieval, self.selected_eids_list, self.docs_list, int(self.width()/width_char)-10)
+                
+                # Mise à jour du dictionnaire des données sur les API
+                self.infos_API['CitationOverview'].update({key: header[key] for key in header if key in self.infos_API['CitationOverview']})
+                
+                # Calcul, mise en forme des données pour les valeurs de l'encadré
+                self.en_tete, self.annee_10y_adapt, header = valeurs_encadre(self.console, self.authorEID, self.years)
+                
+                # Mise à jour du dictionnaire des données sur les API
+                self.infos_API['AuthorLookup'].update({key: header[key] for key in header if key in self.infos_API['AuthorLookup']})
+
+                self.excel, self.classeur = Excel_part1(self.df, self.nom_prenom, self.en_tete, self.annee_10y_adapt)
+
+                self._affichageQuestions(2)
+
+            # État 3 : les plages d'années des histogrammes sont choisies ici
+            case 3:
+                validation, self.years_list, self.df_doc_type_selected = selection_plages_annees(self.console, self.response, self.years, self.df_doc_type, self.index_list)
+                if validation:
                     self.state += 1
 
-                    # Calcul, mise en forme des données pour le graphique des citations
-                    self.docs_list, self.selected_eids_list, self.years = donnees_documents_graph_citations(self.console, self.au_retrieval, self.df_doc_type, self.index_list)
-                    self.df, self.nom_prenom, header = tab_graph_citations(self.console, self.au_retrieval, self.selected_eids_list, self.docs_list, int(self.width()/width_char)-10)
-                    
-                    # Mise à jour du dictionnaire des données sur les API
-                    self.infos_API['CitationOverview'].update({key: header[key] for key in header if key in self.infos_API['CitationOverview']})
-                    
-                    # Calcul, mise en forme des données pour les valeurs de l'encadré
-                    self.en_tete, self.annee_10y_adapt, header = valeurs_encadre(self.console, self.authorEID, self.years)
-                    
-                    # Mise à jour du dictionnaire des données sur les API
-                    self.infos_API['AuthorLookup'].update({key: header[key] for key in header if key in self.infos_API['AuthorLookup']})
-
-                    self.excel, self.classeur = Excel_part1(self.df, self.nom_prenom, self.en_tete, self.annee_10y_adapt)
-
+                    self._affichageQuestions(3)
+                else:
                     self._affichageQuestions(2)
 
-                # État 3 : les plages d'années des histogrammes sont choisies ici
-                case 3:
-                    validation, self.years_list, self.df_doc_type_selected = selection_plages_annees(self.console, self.response, self.years, self.df_doc_type, self.index_list)
-                    if validation:
-                        self.state += 1
+            # État 4 : les 2 types de publications mis en avant sur le graphique des Pubications se fait ici AINSI que l'envoie de toutes les autres données pour
+            # le doc Excel ainsi que l'appel des routines VBA pour réaliser la mise en forme des données et la création de la fiche bibliométrique Word
+            case 4:
+                validation, self.type_list = selection_2_types_docs(self.console, self.df_doc_type_selected, self.response)
+                if validation:
+                    self.state = 0
+                                        
+                    self.df_pub = tab_graph_publications(self.console, self.au_retrieval, self.selected_eids_list, self.years_list, self.type_list, int(self.width()/width_char)-10)
 
-                        self._affichageQuestions(3)
-                    else:
-                        self._affichageQuestions(2)
+                    self.years_list = [[int(item) for item in sublist] for sublist in self.years_list]
+                    self.df_SNIP, header = tab_graph_SNIP(console=self.console, author_id=self.authorEID, years_list=self.years_list, window_width=int(self.width()/width_char)-10)
+                    self.df_Collab, header = tab_graph_Collab(console=self.console, author_id=self.authorEID, years_list=self.years_list, window_width=int(self.width()/width_char)-10)
+                    self.infos_API['AuthorLookup'].update({key: header[key] for key in header if key in self.infos_API['AuthorLookup']})
 
-                # État 4 : les 2 types de publications mis en avant sur le graphique des Pubications se fait ici AINSI que l'envoie de toutes les autres données pour
-                # le doc Excel ainsi que l'appel des routines VBA pour réaliser la mise en forme des données et la création de la fiche bibliométrique Word
-                case 4:
-                    validation, self.type_list = selection_2_types_docs(self.console, self.df_doc_type_selected, self.response)
-                    if validation:
-                        self.state = 0
-                                            
-                        self.df_pub = tab_graph_publications(self.console, self.au_retrieval, self.selected_eids_list, self.years_list, self.type_list, int(self.width()/width_char)-10)
+                    nom_classeur = self.classeur.Name
+                    nom_classeur = nom_classeur.split('.')[0]
+                    Excel_part2(self.excel, self.classeur, self.df_pub, self.df_SNIP, self.df_Collab)
 
-                        self.years_list = [[int(item) for item in sublist] for sublist in self.years_list]
-                        self.df_SNIP, header = tab_graph_SNIP(console=self.console, author_id=self.authorEID, years_list=self.years_list, window_width=int(self.width()/width_char)-10)
-                        self.df_Collab, header = tab_graph_Collab(console=self.console, author_id=self.authorEID, years_list=self.years_list, window_width=int(self.width()/width_char)-10)
-                        self.infos_API['AuthorLookup'].update({key: header[key] for key in header if key in self.infos_API['AuthorLookup']})
+                    # Fermer le message de chargement
+                    self.loading_dialog.close()
 
-                        nom_classeur = self.classeur.Name
-                        nom_classeur = nom_classeur.split('.')[0]
-                        Excel_part2(self.excel, self.classeur, self.df_pub, self.df_SNIP, self.df_Collab)
+                    self.timer.stop()
+                    achieved_msg = AchievedMessageBox(time=self.timer.get_elapsed_time())
+                    achieved_msg.exec()
+                    self.timer.reset()
 
-                        # Fermer le message de chargement
-                        self.loading_dialog.close()
+                    self.console.append("\n")
+                    self.console.append("<b>Rapport d'analyse bibliométrique créé avec succès!</b>")
+                    self.console.append("\n\n")
 
-                        self.timer.stop()
-                        achieved_msg = AchievedMessageBox(time=self.timer.get_elapsed_time())
-                        achieved_msg.exec()
-                        self.timer.reset()
-
-                        self.console.append("\n")
-                        self.console.append("<b>Rapport d'analyse bibliométrique créé avec succès!</b>")
-                        self.console.append("\n\n")
-
-                        # Mettre la fenêtre Word en premier plan
-                        try:
-                            win32gui.SetForegroundWindow(win32gui.FindWindow(None, nom_classeur + " - Word"))
-                        except:
-                            win32gui.SetForegroundWindow(win32gui.FindWindow(None, nom_classeur + '.docx' + " - Word"))
-                        
-                        self._affichageQuestions(0)
-                    else:
-                        self._affichageQuestions(3)
+                    # Mettre la fenêtre Word en premier plan
+                    try:
+                        win32gui.SetForegroundWindow(win32gui.FindWindow(None, nom_classeur + " - Word"))
+                    except:
+                        win32gui.SetForegroundWindow(win32gui.FindWindow(None, nom_classeur + '.docx' + " - Word"))
+                    
+                    self._affichageQuestions(0)
+                else:
+                    self._affichageQuestions(3)
         
-        # Une erreur est rencontrée lors de l'exécution d'un des états, alors une boîte de dialogue s'affiche avec les détails de l'erreur
-        except Exception as e:
-            error_message = "Une erreur s'est produite!\n\nSi l'erreur persiste, veuillez contacter le service technique de  votre établissement.\n\nDétails:\n" + str(e)
-            error_dialog = QMessageBox(QMessageBox.Critical, "Erreur", error_message, QMessageBox.Ok)
-            error_dialog.exec()
-            self.state = 0
-            self._affichageQuestions(self.state)
+        # # Une erreur est rencontrée lors de l'exécution d'un des états, alors une boîte de dialogue s'affiche avec les détails de l'erreur
+        # except Exception as e:
+        #     error_message = "Une erreur s'est produite!\n\nSi l'erreur persiste, veuillez contacter le service technique de  votre établissement.\n\nDétails:\n" + str(e)
+        #     error_dialog = QMessageBox(QMessageBox.Critical, "Erreur", error_message, QMessageBox.Ok)
+        #     error_dialog.exec()
+        #     self.state = 0
+        #     self._affichageQuestions(self.state)
 
         # Déplacer le QTextEdit à sa toute fin
         self.console.verticalScrollBar().setValue(self.console.verticalScrollBar().maximum())

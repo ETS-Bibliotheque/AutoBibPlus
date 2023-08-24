@@ -1,15 +1,11 @@
-from collections import namedtuple
-from warnings import warn
-from typing import Any, List, NamedTuple, Optional, Tuple, Union, Literal
-
+from typing import Union, Literal
 import pandas as pd
 
-from json import loads
 
-from .lookup import Lookup
-from .get_content import  get_content
-from .parse_content import chained_get
-from .constants import URLS
+from ..superclasses.lookup import Lookup
+from ..utils.get_content import get_content
+from ..utils.parse_content import chained_get
+from ..utils.constants import URLS
 
 
 class AuthorLookup(Lookup):
@@ -85,10 +81,6 @@ class AuthorLookup(Lookup):
         # Parse json
         self._results = self._json['results'][0]
         self._dataSource = self._json['dataSource']
-        # self._current_institution = AuthorRetrieval(self._id, refresh=self._refresh).affiliation_current
-        
-        # # Retrieve the id of the first institution from the list of current institutions
-        # self._default_current_institution_id = str(self._current_institution[0]).split("id=")[1].split(",")[0].strip()
 
 
     def __str__(self) -> str:

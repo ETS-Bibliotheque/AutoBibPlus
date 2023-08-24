@@ -3,8 +3,8 @@
 from typing import Union, Literal
 
 from .base import Base
-from .constants import URLS
-from .get_content import get_folder
+from ..utils.constants import URLS
+from ..utils.get_content import get_folder
 
 
 class Lookup(Base):

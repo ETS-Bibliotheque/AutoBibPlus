@@ -1,6 +1,5 @@
 import configparser
 from collections import deque
-from pathlib import Path
 
 from .constants import CONFIG_FILE, RATELIMITS
 from .create_config import create_config

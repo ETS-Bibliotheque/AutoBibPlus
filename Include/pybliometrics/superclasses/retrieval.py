@@ -3,8 +3,8 @@
 from typing import Union
 
 from .base import Base
-from .get_content import get_folder
-from .constants import URLS
+from ..utils.get_content import get_folder
+from ..utils.constants import URLS
 
 
 class Retrieval(Base):
