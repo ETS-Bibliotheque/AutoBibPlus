@@ -210,7 +210,7 @@ class Info(QDialog):
 
         # Définie le nom, redimensionne la Box et instancie le layout principal
         self.setWindowTitle("Informations sur AutoBib")
-        self.resize(600, 500)
+        self.resize(600, 600)
         layout = QVBoxLayout()
 
         info_widget = QTextEdit()
@@ -221,12 +221,17 @@ class Info(QDialog):
         info_widget.append("<b>Pour citer ou reprendre ce logiciel :</b>")
         info_widget.append("Benjamin Lepourtois. (2023). AutoBib. École de Technologie Supérieure. Sous licence MIT.\n\n")
 
+        info_widget.append("<b>Reprise de la bibliothèque publique de code :</b>")
+        info_widget.append("<b>pybliometrics (version 3.5.2) :</b> https://github.com/pybliometrics-dev/pybliometrics")
+        info_widget.append('<b>Article sur pybliometrics :</b> Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263')
+        info_widget.append('\n')
+        
         # Lire le contenu du fichier LICENSE et l'afficher dans la box à la suite
         with open(os.path.join(os.path.dirname(__file__), '..', 'LICENSE'), 'r') as fichier_licence:
             contenu_licence = fichier_licence.read()
-        info_widget.append("<b>MIT license (at the root of the project):</b>")
+        info_widget.append("<b>MIT license (at the root of the project) :</b>")
         info_widget.append(str(contenu_licence))
-
+        
         # Ajout de la zone de texte créée au layout principal et identifie le layout principal comme réel layout principal de la Box
         layout.addWidget(info_widget)
         self.setLayout(layout)

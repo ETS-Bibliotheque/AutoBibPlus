@@ -14,14 +14,18 @@ See the license attached to the root of the project.
 <br>&emsp;<b> ● Mission principale: </b> <br>
 Développer des outils permettant l'automatisation de certaines étapes de production de rapports d'analyses bibliométriques destinés à aider les chercheurs et chercheuses dans la planification de la mesure de l'impact de leurs contributions scientifiques. </p>
 
-<h3><b>Approche choisie:</b></h3>
+<h3><b>Approche choisie :</b></h3>
 <p> Nous avons choisi d'utiliser <b>un script Python pour gérer toute l'automatisation</b> des rapports.
 <br>&emsp; ● Extraction des données: par les API des différentes plateformes utilisées (Scopus et SciVal) à l'aide de la bibliothèque publique "pybliometrics"
 <br>&emsp; ● Traitement des données: en Python à l'aide de la bibliothèque "pandas"
 <br>&emsp; ● Interface Homme-Machine: en QT avec une interface très simpliste basée sur une boîte de dialogue
 <br>&emsp; ● Exportation des données: en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
 <br>&emsp; ● Mise en forme Excel: avec des routines VBA appelées par le script Python
-<br>&emsp; ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word</p>
+<br>&emsp; ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
+
+<br><b>Reprise de la bibliothèque publique de code :</b>
+<br><b>pybliometrics (version 3.5.2) :</b> https://github.com/pybliometrics-dev/pybliometrics
+<br><b>Article sur pybliometrics : </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a></p>
 
 
 
@@ -40,11 +44,15 @@ Develop tools to automate certain stages in the production of bibliometric analy
 <br>&emsp; ● Human Machine Interface: in QT with a very simplistic interface based on a dialog box
 <br>&emsp; ● Data export: in Python using the "pywin32" library to a MacroExcel "Workbook" file (.xlsm)
 <br>&emsp; ● Excel formatting: with VBA routines called by the Python script
-<br>&emsp; ● Production of the Word report: with VBA routines, called by the Python script, which export the data and graphs produced to a Word document.</p>
+<br>&emsp; ● Production of the Word report: with VBA routines, called by the Python script, which export the data and graphs produced to a Word document.
+
+<br><b>Takeover of the code's public library:</b>
+<br><b>pybliometrics (version 3.5.2):</b> https://github.com/pybliometrics-dev/pybliometrics
+<br><b>Article on pybliometrics: </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a></p>
 
 
 <h2 align="left"><br>À propos de moi / About me:</h2>
-<p>(2023/07/12) &emsp;English below!
+<p>(2023/08/25) &emsp;English below!
 <br>Je suis actuellement apprenti à l'École Centrale de Nantes (école d'ingénieur) et au sein du groupe français Thales en France (double statut: étudiant et salarié). 
 <br>J'effectue ce stage, de première année de cycle d'ingénieur, dans le cadre de mon Projet de Séjour à l'International pour valider mon diplôme d'ingénieur.
 <br><br>I'm currently an apprentice at the École Centrale de Nantes (engineering school) and with the French group Thales in France (dual status: student and employee). 
