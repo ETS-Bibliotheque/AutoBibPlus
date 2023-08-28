@@ -811,12 +811,8 @@ def Excel_part1(df: pd.DataFrame, nom_prenom: list, en_tete: list, annee_10y_ada
 
         # Appel de la procédure VBA
         excel.Run(f'{nom_module}.{nom_procedure}', nom_feuille, 'TOTAL', 5)
-
-        # Attend confirmation du user
-        while feuille.Cells(1, 101).Value != "OK":
-            pass
         
-        classeur.Visible = False  # Rendre le classeur visible
+        classeur.Visible = False  # Rendre le classeur invisible
         excel.Visible = False
 
     except Exception as e:
