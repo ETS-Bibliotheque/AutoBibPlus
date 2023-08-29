@@ -389,6 +389,7 @@ def _affichage_plages_annees(parts: list, selected_types: list, df: pd.DataFrame
     # Filtrer le DataFrame en utilisant la méthode isin() avec la liste des index
     df_filtre_reset = df[df.index.isin(selected_types)].reset_index(drop=True)
     df_filtre_reset.index = range(len(df_filtre_reset))
+    df_filtre_reset.index.name = 'Index'
     console.append(df_filtre_reset.to_string(index=True, col_space=0, line_width=200))
 
     # Créé la liste de listes comportant les plages d'années souhaitées pour le chercheur

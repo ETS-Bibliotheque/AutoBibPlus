@@ -1,6 +1,9 @@
 # Le VENV
 .venv/
 
+# Fichier de spec pour exécutable
+*.spec
+
 # Le VSCode
 .vscode/
 
