@@ -3,26 +3,26 @@
 # See the license attached to the root of the project.
 
 """
-Projet d'Automatisation de Rapports d'Analyses Bibliométriques:
+Projet d'Automatisation de Rapports d'Analyses Bibliométriques :
 
 Ce programme fait partie intégrante du projet de conception et développement d'outils automatisés pour la réalisation de rapports d'analyses bibliométriques.
 
-Contexte:
+Contexte :
 
   ● Stage de 12 semaines sur l'été 2023 (12 juin au 1er septembre) dans l'École de Technologie Supérieure, Montréal, Canada
-  ● Mission principale:
+  ● Mission principale :
 Développer des outils permettant l'automatisation de certaines étapes de production de rapports d'analyses bibliométriques 
 destinés à aider les chercheurs et chercheuses dans la planification de la mesure de l'impact de leurs contributions scientifiques.
 
-Approche choisie:
+Approche choisie :
 
 Nous avons choisi d'utiliser un script Python pour gérer toute l'automatisation des rapports.
-  ● Extraction des données: par les API des différentes plateformes utilisées (Scopus et SciVal) à l'aide de la bibliothèque publique "pybliometrics"
-  ● Traitement des données: en Python à l'aide de la bibliothèque "pandas"
-  ● Interface Homme-Machine: en QT avec une interface très simpliste basée sur une boîte de dialogue
-  ● Exportation des données: en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
-  ● Mise en forme Excel: avec des routines VBA appelées par le script Python
-  ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
+  ● Extraction des données : par les API des différentes plateformes utilisées (Scopus et SciVal) à l'aide de la bibliothèque publique "pybliometrics"
+  ● Traitement des données : en Python à l'aide de la bibliothèque "pandas"
+  ● Interface Homme-Machine : en QT avec une interface très simpliste basée sur une boîte de dialogue
+  ● Exportation des données : en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
+  ● Mise en forme Excel : avec des routines VBA appelées par le script Python
+  ● Réalisation du rapport Word : avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
 """
 
 
@@ -53,15 +53,15 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
     config = configparser.ConfigParser()
     config.optionxform = str
 
-    # Fichier de configuration existant ?
+    # Fichier de configuration existant?
     if not CONFIG_FILE.exists():
-        # Clef et token API déjà fournis ?
+        # Clef et token API déjà fournis?
         if keys == None:
             # Affiche dans un premier temps le message de bienvenu (permet aussi de garder la couleur noire sur les textes et tableaux par défaut)
             if first_time:
                 console.append("Bienvenue sur <b>AutoBib</b>, le logiciel qui vous permez de générer automatiquement les rapports d'analyses bibliométriques de l'ÉTS!")
                 console.append("")
-                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal:</p>'.format(text_style_parameter))
+                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal.</p>'.format(text_style_parameter))
             # Rien ne se passe si la zone de texte rentrée est vide
             if response == '':
                 return False, None
@@ -71,7 +71,7 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
             if len(elements) < 2 or elements[1] == '':
                 console.append('<p style={}>! Manque la clef et/ou le token</p>'.format(text_style_warning))
                 console.append('')
-                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal:</p>'.format(text_style_parameter))
+                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal.</p>'.format(text_style_parameter))
                 return False, None
             # Suppression des espaces avant et après les éléments
             elements = [element.strip() for element in elements]
@@ -88,12 +88,12 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
             if response.status_code != 200:
                 console.append('<p style={}>! Clef et/ou Token pour les API invalides (statut de la requête : {})</p>'.format(text_style_warning, response.status_code))
                 console.append('')
-                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal:</p>'.format(text_style_parameter))
+                console.append('<p style={}>☼ Veuillez entrer votre clef API ainsi que votre token (séparés respectivement par une virgule) pour Scopus et SciVal :</p>'.format(text_style_parameter))
                 return False, None
             
             # On peut passer à l'étape suivante : rentrer un chemin d'accès valide à un répertoire pour enregistrer les rapports par défaut
             console.append("\n\n")
-            console.append("<p style={}>☼ Veuillez entrer le chemin d'accès ENTIER du répertoire où vous voulez enregistrer les rapports par défault (ex: C:\\Users\\Name\\Documents):</p>".format(text_style_parameter))
+            console.append("<p style={}>☼ Veuillez entrer le chemin d'accès ENTIER du répertoire où vous voulez enregistrer les rapports par défault (ex : C:\\Users\\Name\\Documents).</p>".format(text_style_parameter))
             return False, elements
         
         # Rien ne se passe si la zone de texte rentrée est vide
@@ -105,7 +105,7 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
         if not docs_path.is_dir():
             console.append("<p style={}>! Chemin d'accès à un dossier non-valide</p>".format(text_style_warning))
             console.append('')
-            console.append("<p style={}>☼ Veuillez entrer le chemin d'accès ENTIER du répertoire où vous voulez enregistrer les rapports par défault (ex: C:\\Users\\Name\\Documents):</p>".format(text_style_parameter))
+            console.append("<p style={}>☼ Veuillez entrer le chemin d'accès ENTIER du répertoire où vous voulez enregistrer les rapports par défault (ex : C:\\Users\\Name\\Documents).</p>".format(text_style_parameter))
             return False, keys
         
         # Suppression du fichier de configuration non-abouti puis création du fichier complet
@@ -118,12 +118,14 @@ def check_create_config(console: QPlainTextEdit, response: str, keys: list = Non
         console.append("Pour plus de détails, veuillez consulter https://pybliometrics.rtfd.io/en/stable/configuration.html.")
         console.append('')
 
-    console.append("Bienvenue sur <b>AutoBib</b>, le logiciel qui vous permez de générer automatiquement les rapports d'analyses bibliométriques de l'ÉTS!")
-    console.append("\nLes commandes suivantes pourraient vous aider:\n\t- 0,[1;2]  puis <Entrée/Enter>: \tpermet de combiner des types sous le nom du 1er entre crochets, SEULEMENT pour les 2 types de publications\n\n\t- seulement <Entrée/Enter>: \t\tpermet de sélectionner les paramètres par défaut (pour les questions)\n\nLa barre d'outils en rouge peut être déplacée à l'aide de sa ligne de points à son extrémité.\n")
-    console.append("<b>Tapez vos commandes dans la barre d'entrée de texte tout en bas de la page</b>, puis validez les en appuyant sur la touche &lt;Entrée/Enter&gt; de votre clavier.")
-    console.append("\n")
+    console.append("""Bienvenue sur <b>AutoBib</b>, le logiciel qui vous permez de générer automatiquement les rapports d'analyses bibliométriques de l'ÉTS!
+                    <br><br>Les commandes suivantes pourraient vous aider :
+                    <br>&nbsp;&nbsp;- <b>Touche &lt;Entrée/Enter&gt;</b> :&nbsp;&nbsp;permet de sélectionner les paramètres <b>par défaut</b>
+                    <br>&nbsp;&nbsp;- <b>Séparateur de valeurs</b> :&nbsp;&nbsp;utilisez la virgule
+                    <br><br>La barre d'outils en rouge peut être déplacée à l'aide de sa ligne de points à son extrémité.
+                    <br><br><b>Tapez vos commandes dans la barre d'entrée de texte tout en bas de la page</b>, puis validez-les en appuyant sur la touche &lt;Entrée/Enter&gt; de votre clavier.<br><br>""")
 
-    console.append('<span style="color: #0C5E31">● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</span>')  # Affiche la première interrogation dans la console
+    console.append('<span style="color: #0C5E31">● Veuillez entrer le nom puis le prénom de la personne (nom, prénom).</span>')  # Affiche la première interrogation dans la console
     return True, keys
 
 
@@ -134,7 +136,7 @@ class ConsoleWindow(QMainWindow):
     def __init__(self):
         super().__init__() # Permet de récupérer le constructeur de la classe mère: QMainWindow
 
-        self.setWindowTitle("AutoBib: Logiciel d'automatisation des rapports d'analyses bibliométriques de l'ÉTS") # Définie le nom de la fenêtre
+        self.setWindowTitle("AutoBib : Logiciel d'automatisation des rapports d'analyses bibliométriques de l'ÉTS") # Définie le nom de la fenêtre
         self.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + "/Logos/ETS_Logo.png"))  # Définit le logo
 
         # Définie la zone de texte (console)
@@ -249,11 +251,10 @@ class ConsoleWindow(QMainWindow):
         # Frontend
         self.df_doc_type_selected = [0,0]
         self.tableauQuestions = [
-            '<span style={}>● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</span>'.format(self.text_style_question),
-            "<span style={}>● Quel.s type.s de documents souhaitez-vous exclure de la liste? (Entrée: AUCUN)[index avec virgule comme séparateur]</span>".format(self.text_style_question),
-            "<span style={}>● Quelles sont les 2 plages d'années que vous-choisissez? (Entrée: {}, {}, {} (soit: 3ans, 5ans, Carrière))[année avec virgule comme séparateur]</span>".format(self.text_style_question, 'NONE', 'NONE', 'NONE'),
-            "<span style={}>● Quels sont les 2 types de publications que vous-voulez mettre en valeur? (Entrée: {}, {})[index avec virgule comme séparateur]</span>".format(self.text_style_question, 'NONE', 'NONE'),
-            '<span style={}>● Pour une nouvelle recherche, veuillez taper "OTHER":</span>'.format(self.text_style_question)
+            '<span style={}>● Veuillez entrer le nom puis le prénom de la personne (nom, prénom).</span>'.format(self.text_style_question),
+            "<span style={}>● Quel.s type.s de documents souhaitez-vous exclure de la liste? (Par défaut : aucun)[Entrez le ou les numéro.s de l'index]</span>".format(self.text_style_question),
+            "<span style={}>● Quelles sont les 2 plages d'années que vous-choisissez? (Par défaut : {}, {} (c-à-d : 3ans et 5ans))(période carrière ajoutée par défaut, si aucune 3ème valeur n'est spécifiée)</span>".format(self.text_style_question, 'NONE', 'NONE'),
+            "<span style={}>● Quels sont les 2 types de publications que vous voulez mettre en valeur? (Par défaut : {}, {} (c-à-d : {}, {}))[Entrez les numéros de l'index]</span><br><span style={}>--Option de combinaison sous le format [n1; n2] : syntaxe permettant de combiner des types de publications sous le nom du 1er type (n1).</span>".format(self.text_style_question, "0", "1", "NONE", "NONE", '"color: #75163F"')
         ]
 
 
@@ -290,19 +291,19 @@ class ConsoleWindow(QMainWindow):
         width_char = font_metrics.averageCharWidth()
 
         # Test l'exécution du script de l'état courant et test la validité des transitions possibles sinon message d'erreur
-        try :
+        try:
             # Machine à états
             match self.state:
-                # État initial : recherche d'un chercheur par son nom et son prénom
+                # État initial : recherche d'une personne par son nom et son prénom
                 case 0:
                     # Validation du format de la requête de l'utilisateur
                     if ',' in self.response and not self.response.split(",")[1] =='':
                         last_name = self.response.split(",")[0]
                         first_name = self.response.split(",")[1]
                     else:
-                        self.console.append('<p style={}>! Manque du séparateur (virgule) et/ou du prénom du chercheur</p>'.format(text_style_warning))
+                        self.console.append('<p style={}>! Manque du séparateur (virgule) et/ou du prénom du personne</p>'.format(text_style_warning))
                         self.console.append('')
-                        self.console.append('<p style={}>● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</p>'.format(text_style_question))
+                        self.console.append('<p style={}>● Veuillez entrer le nom puis le prénom de la personne (nom, prénom).</p>'.format(text_style_question))
                         # Fermer le message de chargement
                         self.loading_dialog.close()
                         return
@@ -310,7 +311,7 @@ class ConsoleWindow(QMainWindow):
                     # Lancement du timer
                     self.timer.start()
 
-                    # Recherche du chercheur
+                    # Recherche de la personne
                     self.search = AuthorSearch('AUTHLAST(' + last_name + ') and AUTHFIRST(' + first_name + ')', refresh=True)
                     self.infos_API['AuthorSearch'].update({key: self.search._header[key] for key in self.search._header if key in self.infos_API['AuthorSearch']})
                     
@@ -416,7 +417,7 @@ class ConsoleWindow(QMainWindow):
         
         # Une erreur est rencontrée lors de l'exécution d'un des états, alors une boîte de dialogue s'affiche avec les détails de l'erreur
         except Exception as e:
-            error_message = "Une erreur s'est produite!\n\nSi l'erreur persiste, veuillez contacter le service technique de  votre établissement.\n\nDétails:\n" + str(e)
+            error_message = "Une erreur s'est produite!\n\nSi l'erreur persiste, veuillez contacter le service technique de  votre établissement.\n\nDétails :\n" + str(e)
             error_dialog = QMessageBox(QMessageBox.Critical, "Erreur", error_message, QMessageBox.Ok)
             error_dialog.exec()
             self.state = 0
@@ -433,16 +434,16 @@ class ConsoleWindow(QMainWindow):
         if affichage_type == 2:
             # Supprimer l'élément d'indice 2 (troisième élément) en utilisant pop()
             self.tableauQuestions.pop(2)
-            self.tableauQuestions.insert(2, "<span style={}>● Quelles sont les 2 plages d'années que vous-choisissez? (Entrée: {}, {} (, {}) (soit: 3ans, 5ans, Carrière))[année avec virgule comme séparateur]</span>".format(self.text_style_question, datetime.now().year-3, datetime.now().year-5, self.years[0]))
+            self.tableauQuestions.insert(2, "<span style={}>● Quelles sont les 2 plages d'années que vous-choisissez? (Par défaut : {}, {} (c-à-d : 3ans et 5ans))(période carrière ajoutée par défaut, si aucune 3ème valeur n'est spécifiée)</span>".format(self.text_style_question, datetime.now().year-3, datetime.now().year-5))
         if affichage_type == 3:
             # Supprimer l'élément d'indice 3 (troisième élément) en utilisant pop()
             self.tableauQuestions.pop(3)
             liste_types_selec = self.df_doc_type_selected['Type de documents'].to_list()
-            self.tableauQuestions.insert(3, "<span style={}>● Quels sont les 2 types de publications que vous-voulez mettre en valeur? (Entrée: {}, {} (soit: {}, {}))[index avec virgule comme séparateur]</span>".format(self.text_style_question, self.index_list[0], self.index_list[1] if len(self.index_list)>1 else '∅', liste_types_selec[0], liste_types_selec[1] if len(liste_types_selec)>1 else '∅')),
+            self.tableauQuestions.insert(3, "<span style={}>● Quels sont les 2 types de publications que vous voulez mettre en valeur? (Par défaut : {}, {} (c-à-d : {}, {}))[Entrez les numéros de l'index]</span><br><span style={}>--Option de combinaison sous le format [n1; n2] : syntaxe permettant de combiner des types de publications sous le nom du 1er type (n1).</span>".format(self.text_style_question, self.index_list[0], self.index_list[1] if len(self.index_list)>1 else '∅', liste_types_selec[0], liste_types_selec[1] if len(liste_types_selec)>1 else '∅', '"color: #75163F"')),
         self.console.append('')
         self.console.append(self.tableauQuestions[affichage_type])
 
-    # Méthode : Recherche du chercheur sélectionné
+    # Méthode : Recherche de la personne sélectionnée
     def _rechercheSurChercheur(self, choix: int = 0):
         from Include.Tools import retrieval, tous_les_docs_chercheur
 
@@ -514,10 +515,12 @@ class ConsoleWindow(QMainWindow):
         if self.state != -1:
             self.console.setPlainText('')
             
-            self.console.append("Bienvenue sur <b>AutoBib</b>, le logiciel qui vous permez de générer automatiquement les rapports d'analyses bibliométriques de l'ÉTS!")
-            self.console.append("\nLes commandes suivantes pourraient vous aider:\n\t- 0,[1;2]  puis <Entrée/Enter>: \tpermet de combiner des types sous le nom du 1er entre crochets, SEULEMENT pour les 2 types de publications\n\n\t- seulement <Entrée/Enter>: \t\tpermet de sélectionner les paramètres par défaut (pour les questions)\n\nLa barre d'outils en rouge peut être déplacée à l'aide de sa ligne de points à son extrémité.\n")
-            self.console.append("<b>Tapez vos commandes dans la barre d'entrée de texte tout en bas de la page</b>, puis validez les en appuyant sur la touche &lt;Entrée/Enter&gt; de votre clavier.")
-            self.console.append("")
+            self.console.append("""Bienvenue sur <b>AutoBib</b>, le logiciel qui vous permez de générer automatiquement les rapports d'analyses bibliométriques de l'ÉTS!
+                                    <br><br>Les commandes suivantes pourraient vous aider :
+                                    <br>&nbsp;&nbsp;- <b>Touche &lt;Entrée/Enter&gt;</b> :&nbsp;&nbsp;permet de sélectionner les paramètres <b>par défaut</b>
+                                    <br>&nbsp;&nbsp;- <b>Séparateur de valeurs</b> :&nbsp;&nbsp;utilisez la virgule
+                                    <br><br>La barre d'outils en rouge peut être déplacée à l'aide de sa ligne de points à son extrémité.
+                                    <br><br><b>Tapez vos commandes dans la barre d'entrée de texte tout en bas de la page</b>, puis validez-les en appuyant sur la touche &lt;Entrée/Enter&gt; de votre clavier.<br>""")
 
             self.state = 1
             self.raz()

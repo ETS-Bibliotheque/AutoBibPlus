@@ -65,12 +65,12 @@ trad_en2fr = {
 # Inverser le dictionnaire en échangeant les clés et les valeurs
 trad_fr2en = {v: k for k, v in trad_en2fr.items()}
 
-# Fonction qui retourne l'incrément de la variable d'état en fonction du nombre de résultats pour un nom et un prénom de chercheur
+# Fonction qui retourne l'incrément de la variable d'état en fonction du nombre de résultats pour un nom et un prénom de la personne
 def homonyme(resultatRecherche: AuthorSearch, console: QPlainTextEdit, window_width: int):
     if not resultatRecherche.get_results_size():
         console.append('<p style={}>! Aucun résultat</p>'.format(text_style_warning))
         console.append('')
-        console.append('<p style={}>● Veuillez entrer le nom et le prénom du chercheur [respectivement avec virgule comme séparateur]:</p>'.format(text_style_question))
+        console.append('<p style={}>● Veuillez entrer le nom et le prénom de la personne [respectivement avec virgule comme séparateur] :</p>'.format(text_style_question))
         return 0
     else:
         # Affiche les résultats de manière organisée
@@ -80,13 +80,13 @@ def homonyme(resultatRecherche: AuthorSearch, console: QPlainTextEdit, window_wi
         df = df.drop(df.columns[[0, 1, 3, 7]], axis=1) # Supprime les colonnes de données qui ne nous intéressent pas
         df.columns = ['Nom', 'Prénom', 'Affiliation', 'Nb docs', 'Ville', 'Pays', 'Domaine(s) de recherche'] # Renomme alors celles qui nous intéressent
         console.append('')
-        console.append('<p style="text-decoration: underline; color: black;">Chercheur.s trouvé.s:</p>')
+        console.append('<p style="text-decoration: underline; color: black;">Personne.s trouvée.s :</p>')
         console.append(df.to_string(index=True, col_space=0, line_width=window_width))
 
-        # Permet de savoir si l'utilisateur doit choisir un chercheur dans une liste
+        # Permet de savoir si l'utilisateur doit choisir une personne dans une liste
         if len(resultatRecherche.authors) > 1:
             console.append('')
-            console.append('<p style={}>● Quel chercheur choisissez-vous (index)?</p>'.format(text_style_question))
+            console.append("<p style={}>● Quelle personne choisissez-vous? [Entrez le numéro de l'index]</p>".format(text_style_question))
             return 1
     return 2
 
@@ -98,42 +98,42 @@ def _is_valid_integer(value, max_value):
     
 # Fonction qui retourne vrai si les index rentrés sont valides
 def selection_homonyme(choix: str, s: AuthorSearch, console: QPlainTextEdit):
-    # Vérifier si la valeur entrée est un entier et compris dans range de chercheurs trouvés
+    # Vérifier si la valeur entrée est un entier et compris dans range de personnes trouvées
     if _is_valid_integer(choix, len(s.authors)):
         return True
     else:
         console.append('<p style={}>! Veuillez entrer un index du tableau valide</p>'.format(text_style_warning))
         console.append('')
-        console.append('<p style={}>● Quel chercheur choisissez-vous (index)?</p>'.format(text_style_question))
+        console.append("<p style={}>● Quelle personne choisissez-vous? [Entrez le numéro de l'index]</p>".format(text_style_question))
         return False
 
 
-# Fonction qui retourne l'EID tronqué et surtout l'instance de AuthorRetrieval sur le chercheur sélectionné
+# Fonction qui retourne l'EID tronqué et surtout l'instance de AuthorRetrieval sur la personne sélectionnée
 def retrieval(choix: int, s: AuthorSearch, console: QPlainTextEdit):
-    # Récupération de l'identifier de l'eid en fonction du chercheur sélectionné
+    # Récupération de l'identifier de l'eid en fonction de la personne sélectionné
     author_eid = s.authors[choix].eid
     author_eid = author_eid.split("s2.0-")[-1] # récupère le 2ème élément créé avec le split (donc eid)
 
-    # Affiche un résumé sur le chercheur sélectionné
+    # Affiche un résumé sur la personne sélectionnée
     au_retrieval = AuthorRetrieval(author_eid, refresh=True)
     sum = str(au_retrieval)
 
     console.append('')
-    console.append('<p style="text-decoration: underline;">Résumé du chercheur sélectionné:</p>')
+    console.append('<p style="text-decoration: underline;">Résumé de la personne sélectionnée :</p>')
     console.append('<p style="font-weight: bold;">{}</p>'.format(sum))
     console.append('\n')
 
     return author_eid, au_retrieval
 
-# Fonction qui retourne un DataFrame sur les types de documents avec leur nombre en fonction du chercheur sélectionné
+# Fonction qui retourne un DataFrame sur les types de documents avec leur nombre en fonction de la personne sélectionnée
 def tous_les_docs_chercheur(au_retrieval: AuthorRetrieval, console: QPlainTextEdit):
-    # Récupère tous les documents publiés du chercheur et les stock dans un DataFrame
+    # Récupère tous les documents publiés de la personne et les stock dans un DataFrame
     docs = pd.DataFrame(au_retrieval.get_documents(refresh=10))
 
     # Afficher les valeurs uniques dans la colonne 'subtypeDescription'
     list_val = docs['subtypeDescription'].unique()
 
-    # Calcul le nombre total de document du chercheur
+    # Calcul le nombre total de document du personne
     total = sum(len(docs[docs['subtypeDescription'] == val]) for val in list_val)
 
     # Compter les occurrences de chaque valeur
@@ -149,7 +149,7 @@ def tous_les_docs_chercheur(au_retrieval: AuthorRetrieval, console: QPlainTextEd
     df['Type de documents'] = df['Type de documents'].map(trad_en2fr)
 
     # Affichage
-    console.append('<p style="text-decoration: underline; color: black;">Nb de documents en fonction de leur type:</p>')
+    console.append('<p style="text-decoration: underline; color: black;">Nb de documents en fonction de leur type :</p>')
     console.append(df.to_string(index=True, col_space=0, line_width=200)) # .to_string().encode('utf-8')
     console.append('<p style="font-weight: bold;">Total: {}</p>'.format(str(total)))
 
@@ -165,18 +165,18 @@ def selection_types_de_documents(selected_types: list, len_df: int, console: QPl
     for type_index in selected_types:
         # Vérifier si l'index est valide
         if not (type_index.isdigit() and int(type_index) < len_df):
-            console.append('<p style={}>! Index non valide: {}</p>'.format(text_style_warning, type_index))
+            console.append('<p style={}>! Index non valide : {}</p>'.format(text_style_warning, type_index))
             tout_valide = False
         elif selected_types.count(str(int(type_index))) > 1:
-            console.append('<p style={}>! Doublon trouvé: {}</p>'.format(text_style_warning, type_index))
+            console.append('<p style={}>! Doublon trouvé : {}</p>'.format(text_style_warning, type_index))
             tout_valide = False        
     
     return tout_valide
 
 # Fonction qui retourne les listes de : du nombre de documents par année avec prise en compte des types de docs sélectionnés, 
-# des eids de tous les documents des types sélectionnés, ainsi que les années de carrière du chercheur
+# des eids de tous les documents des types sélectionnés, ainsi que les années de carrière de la personne
 def donnees_documents_graph_citations(au_retrieval: AuthorRetrieval, selected_types: list, df: pd.DataFrame, console: QPlainTextEdit):
-    # Créé un DataFrame avec toutes les données sur tous les documents du chercheur sélectionné
+    # Créé un DataFrame avec toutes les données sur tous les documents de la personne sélectionnée
     docs = pd.DataFrame(au_retrieval.get_documents(refresh=10))
 
     # Trie par année de publication des documents
@@ -195,7 +195,7 @@ def donnees_documents_graph_citations(au_retrieval: AuthorRetrieval, selected_ty
     # Affichage des traductions des types de docs du df2 (les sélectionnés) les uns après les autres séparés par une virgule
     selection_string = ', '.join([trad_en2fr[doc] for doc in df2['Type de documents'].tolist()])
     console.append('')
-    console.append('<a style="font-weight: bold;">Votre sélection: </a>' + selection_string)
+    console.append('<a style="font-weight: bold;">Votre sélection : </a>' + selection_string)
     console.append('\n')
 
     # Filtrer les documents en fonction des types sélectionnés et créer une nouvelle colonne 'Année'
@@ -213,7 +213,7 @@ def donnees_documents_graph_citations(au_retrieval: AuthorRetrieval, selected_ty
     first_year = draft_list.values[0]
     total_annees = datetime.now().year - int(first_year) + 2
 
-    # Liste de toutes les années du chercheur
+    # Liste de toutes les années de la personne
     years = [int(first_year) + i for i in range(total_annees)]
 
     # Créé la liste finale avec le nombre total de citations par année
@@ -233,7 +233,7 @@ def donnees_documents_graph_citations(au_retrieval: AuthorRetrieval, selected_ty
 
     return final_list, eids_list, years
 
-# Fonction qui retourne les listes de : du nombre de citations par année et les années de carrière du chercheur
+# Fonction qui retourne les listes de : du nombre de citations par année et les années de carrière de la personne
 def donnees_citations_graph_citations(au_retrieval: AuthorRetrieval, document_eids: list):
     # Constantes nécessaires pour la suite des calculs
     first_year = au_retrieval.publication_range[0]
@@ -246,7 +246,7 @@ def donnees_citations_graph_citations(au_retrieval: AuthorRetrieval, document_ei
     length_list_eids = len(document_eids)
     stop_value = int((length_list_eids-1)/25)
 
-    # Extraire les données du premier élément obligatoirement à part sinon cela impacte la boucle for si length > 25 !
+    # Extraire les données du premier élément obligatoirement à part sinon cela impacte la boucle for si length > 25!
     co = CitationOverview(identifier=document_eids[0:1], start=first_year, end=first_year+total_annees-1, refresh=True)
     header_citation = co._header
     citation_overviews = []
@@ -309,7 +309,7 @@ def tab_graph_citations(au_retrieval: AuthorRetrieval, eids_list: list, liste_do
     df = df.rename(index={1: 'Documents'})
     
     # Affichage
-    console.append("\n" + '<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Citations</b>:</p>')
+    console.append("\n" + '<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Citations</b> :</p>')
     console.append(df.to_string(index=True, col_space=0, line_width=window_width))
 
     return df, [au_retrieval.given_name, au_retrieval.surname], header
@@ -323,9 +323,9 @@ def _replace_none_with_zero(lst: list):
             lst[i] = 0
     return lst
 
-# Fonction qui retourne les valeurs de l'encadré du rapport en fonction de l'eid du chercheur sélectionné
+# Fonction qui retourne les valeurs de l'encadré du rapport en fonction de l'eid de la personne sélectionnée
 def valeurs_encadre(author_eid, years_list: list):
-    # Instance de l'objet AuthorLookup correspondant au chercheur sélectionné via l'EID
+    # Instance de l'objet AuthorLookup correspondant à la personne sélectionnée via l'EID
     au = AuthorLookup(author_id=author_eid, refresh=True)
 
     # Obtient via l'instance les metrics "ScholarlyOutput" sur les 10 dernières années complètes sous forme de liste tot_scholarly_out
@@ -382,9 +382,9 @@ def _affichage_plages_annees(parts: list, selected_types: list, df: pd.DataFrame
 
     # Affichage
     console.append('')
-    console.append('<p><a style="font-weight: bold;">Votre sélection:</a> {}ans ({}), {}ans ({}) et Carrière ({})</p>'.format(current_year - parts[2], parts[2], current_year - parts[1], parts[1], parts[0]))
+    console.append('<p><a style="font-weight: bold;">Votre sélection :</a> {}ans ({}), {}ans ({}) et Carrière ({})</p>'.format(current_year - parts[2], parts[2], current_year - parts[1], parts[1], parts[0]))
     console.append('\n')
-    console.append('<p style="text-decoration: underline; color: black;">Nb de documents en fonction de leur type:</p>')
+    console.append('<p style="text-decoration: underline; color: black;">Nb de documents en fonction de leur type :</p>')
 
     # Filtrer le DataFrame en utilisant la méthode isin() avec la liste des index
     df_filtre_reset = df[df.index.isin(selected_types)].reset_index(drop=True)
@@ -392,7 +392,7 @@ def _affichage_plages_annees(parts: list, selected_types: list, df: pd.DataFrame
     df_filtre_reset.index.name = 'Index'
     console.append(df_filtre_reset.to_string(index=True, col_space=0, line_width=200))
 
-    # Créé la liste de listes comportant les plages d'années souhaitées pour le chercheur
+    # Créé la liste de listes comportant les plages d'années souhaitées pour la personne
     year_list = []
     for i in range(len(parts)):
         year_range = list(range(parts[i], current_year + 2))
@@ -471,7 +471,7 @@ def selection_2_types_docs(index_took: str, df: pd.DataFrame, console: QPlainTex
     # Si l'utilisateur prend les choix par défaut
     if len(selected_types) == 1 and selected_types[0][0] == "":
         console.append('')
-        console.append('<p><a style="font-weight: bold;">Votre sélection:</a> {}, {}</p>'.format(liste_types_selec[0], liste_types_selec[1] if len(liste_types_selec)>1 else '∅'))
+        console.append('<p><a style="font-weight: bold;">Votre sélection :</a> {}, {}</p>'.format(liste_types_selec[0], liste_types_selec[1] if len(liste_types_selec)>1 else '∅'))
         console.append('\n')
         return True, [[liste_types_selec[0]], [liste_types_selec[1] if len(liste_types_selec)>1 else '∅']]
     
@@ -501,7 +501,7 @@ def selection_2_types_docs(index_took: str, df: pd.DataFrame, console: QPlainTex
 
     # Affichage
     console.append('')
-    console.append('<p><a style="font-weight: bold;">Votre sélection:</a> {}, {}</p>'.format(df.at[selected_types[0][0], 'Type de documents'], df.at[selected_types[1][0], 'Type de documents']))
+    console.append('<p><a style="font-weight: bold;">Votre sélection :</a> {}, {}</p>'.format(df.at[selected_types[0][0], 'Type de documents'], df.at[selected_types[1][0], 'Type de documents']))
     console.append('\n')
 
     return True, [[df.loc[element, 'Type de documents'] for element in sublist] for sublist in selected_types] # Traduction des index en nom de type de documents
@@ -557,7 +557,7 @@ def tab_graph_publications(au_retrieval: AuthorRetrieval, document_eids: list, l
     results = results.assign(TOTAL=results.sum(axis=1))
 
     # Affiche le tableau
-    console.append("\n" + '<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Publications</b>:</p>')
+    console.append("\n" + '<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Publications</b> :</p>')
     console.append(results.to_string(index=True, col_space=0, line_width=window_width))
 
     return results
@@ -586,7 +586,7 @@ def tab_graph_SNIP(author_id: str, years_list: list, console: pd.DataFrame, wind
     # Convertie le type toutes les années (de str/string à int/integer)
     years_list = [[int(item) for item in sublist] for sublist in years_list]
 
-    # Instance de l'objet AuthorLookup correspondant au chercheur sélectionné via l'ID
+    # Instance de l'objet AuthorLookup correspondant à la personne sélectionnée via l'ID
     au = AuthorLookup(author_id=author_id, refresh=True)
 
     # Obtient via l'instance les metrics "PublicationsInTopJournalPercentiles" avec seulement les types Articles et Reviews
@@ -627,7 +627,7 @@ def tab_graph_SNIP(author_id: str, years_list: list, console: pd.DataFrame, wind
 
     # Affiche le tableau
     console.append('\n')
-    console.append('<p style="text-decoration: underline; color: black;">Tableau pour le graphique <b>SNIP</b>:</p>')
+    console.append('<p style="text-decoration: underline; color: black;">Tableau pour le graphique <b>SNIP</b> :</p>')
     console.append(df.to_string(index=True, col_space=0, line_width=window_width))
 
     return df, au._header
@@ -655,7 +655,7 @@ def _for_Collab_list_10y_current_future(lst: list):
 
 # Fonction qui retourne un DataFrame (tableau) pour le graphique Collaborations du rapport
 def tab_graph_Collab(author_id: str, years_list: list, console: pd.DataFrame, window_width: int):
-    # Instance de l'objet AuthorLookup correspondant au chercheur sélectionné via l'ID
+    # Instance de l'objet AuthorLookup correspondant à la personne sélectionnée via l'ID
     au = AuthorLookup(author_id=author_id, refresh=True)
 
     # Obtient via l'instance les metrics "Collaboration" sur les 10 dernières années complètes sous forme de liste ten_y_cf_list
@@ -687,7 +687,7 @@ def tab_graph_Collab(author_id: str, years_list: list, console: pd.DataFrame, wi
 
     # Affiche le tableau
     console.append('\n')
-    console.append('<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Collaborations</b>:</p>')
+    console.append('<p style="text-decoration: underline; color: black;">Tableau pour le graphique des <b>Collaborations</b> :</p>')
     console.append(df.to_string(index=True, col_space=0, line_width=window_width))
 
     return df, au._header
@@ -824,7 +824,7 @@ def Excel_part1(df: pd.DataFrame, nom_prenom: list, en_tete: list, annee_10y_ada
     
 # Fonction qui reprend le classeur ouvert (caché) et qui permet d'exporter le reste des 
 # données sur le gabarit Excel et d'appeler la routine VBA du gabarit Excel qui
-# remplie le gabarit Word pour avoir la fiche bibliométrique finale !
+# remplie le gabarit Word pour avoir la fiche bibliométrique finale!
 def Excel_part2(excel, classeur, df: pd.DataFrame, df_SNIP: pd.DataFrame, df_Collab: pd.DataFrame):
     # Ouvrir le classeur Excel existant
     nom_fichier = os.path.dirname(os.path.abspath(__file__)) + '\\..\\GABARIT.xlsm'

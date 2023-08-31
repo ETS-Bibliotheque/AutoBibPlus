@@ -111,7 +111,7 @@ class AchievedMessageBox(QMessageBox):
         from .pybliometrics.utils.startup import DOCS_PATH
         self.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + "/../Logos/CN_Logo_Modified.png")) 
         self.setWindowTitle("Rapport réalisé")
-        self.setText(f"Félicitations!\n\nRapport d'analyse bibliométrique créé avec succès.\n\nLe rapport est enregistré par défaut dans le répertoire suivant:\n{DOCS_PATH[0]}\n\nCe rapport a été généré en: {int(time/60)}min {time%60}s")
+        self.setText(f"Félicitations!\n\nRapport d'analyse bibliométrique créé avec succès.\n\nLe rapport est enregistré par défaut dans le répertoire suivant :\n{DOCS_PATH[0]}\n\nCe rapport a été généré en : {int(time/60)}min {time%60}s")
 
         pixmap = QPixmap(os.path.dirname(os.path.abspath(__file__)) + "/../Logos/ETS_Logo.png")  # Chemin vers icône personnalisée
         self.setIconPixmap(pixmap.scaled(64, 64))  # Redimensionner l'icône et l'assigner
@@ -134,7 +134,7 @@ class ReconfigMessageBox(QMessageBox):
         self.setIcon(QMessageBox.Question)
         self.setWindowIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + "/../Logos/CN_Logo_Modified.png"))
         self.setWindowTitle("Reconfiguration")
-        self.setText("\nÊtes-vous sûr de vouloir reconfigurer\nla clef et le token institutionnel?")
+        self.setText("\nÊtes-vous sûr de vouloir reconfigurer la clef, le token institutionnel et le chemin d'accès au dossier où sont enregistrés les rapports par défaut?")
 
         # Définie les boutons pour répondre à la question (role et mise en forme)
         self.buttonYes = self.addButton("Oui", QMessageBox.YesRole)

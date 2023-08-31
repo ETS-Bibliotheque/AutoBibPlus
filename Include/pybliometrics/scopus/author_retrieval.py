@@ -275,8 +275,8 @@ class AuthorRetrieval(Retrieval):
         s = f"{self.indexed_name} venant de {main_aff.preferred_name}, "\
             f"{main_aff.country},\na publié {int(self.document_count):,} "\
             f"document.s depuis {self.publication_range[0]}."\
-            f"\nCe chercheur a été cité par {int(self.cited_by_count):,} auteur.s dans "\
-            f"{int(self.citation_count):,} document.s, à compter du {date}"
+            f"\nCette personne a été citée par {int(self.cited_by_count):,} auteur.s dans "\
+            f"{int(self.citation_count):,} document.s, en date du {date}"
         return s
 
     def get_coauthors(self) -> Optional[List[NamedTuple]]:
