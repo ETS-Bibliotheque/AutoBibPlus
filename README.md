@@ -10,22 +10,26 @@ See the license attached to the root of the project.
 <br><br>English below!</p>
 
 <h3><b>Contexte:</b></h3>
-<p style="text-align: justify;">&emsp;<b> ● Stage de 12 semaines sur l'été 2023</b> (12 juin au 1er septembre) dans l'<b>École de Technologie Supérieure, Montréal, Canada</b>
-<br>&emsp;<b> ● Mission principale: </b> <br>
-Développer des outils permettant l'automatisation de certaines étapes de production de rapports d'analyses bibliométriques destinés à aider les chercheurs et chercheuses dans la planification de la mesure de l'impact de leurs contributions scientifiques. </p>
+<p style="text-align: justify;">&emsp;<b> ● Auteur :</b> Benjamin Lepourtois
+<br>&emsp;<b> ● Stage de 12 semaines sur l'été 2023</b> (12 juin au 1er septembre) dans l'<b>École de Technologie Supérieure, Montréal, Canada</b>
+<br>&emsp;<b> ● Tutoré par :</b> Lokman SBOUI (PhD) & Judith BOISSONNEAULT, Vanessa AYOTTE et Sonia SECK (équipe bibliothèque de l'ÉTS)
+<br>&emsp;<b> ● Mission principale : </b> <br>
+Développer des outils permettant l'automatisation de certaines étapes de production de rapports d'analyses bibliométriques destinés à aider les chercheurs et chercheuses dans la planification de la mesure de l'impact de leurs contributions scientifiques.</p>
 
 <h3><b>Approche choisie :</b></h3>
 <p> Nous avons choisi d'utiliser <b>un script Python pour gérer toute l'automatisation</b> des rapports.
-<br>&emsp; ● Extraction des données: par les API des différentes plateformes utilisées (Scopus et SciVal) à l'aide de la bibliothèque publique "pybliometrics"
-<br>&emsp; ● Traitement des données: en Python à l'aide de la bibliothèque "pandas"
-<br>&emsp; ● Interface Homme-Machine: en QT avec une interface très simpliste basée sur une boîte de dialogue
-<br>&emsp; ● Exportation des données: en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
-<br>&emsp; ● Mise en forme Excel: avec des routines VBA appelées par le script Python
-<br>&emsp; ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
+<br>&emsp; ● Extraction des données : par les API des différentes plateformes utilisées (Scopus et SciVal) à l'aide de la bibliothèque publique "pybliometrics"
+<br>&emsp; ● Traitement des données : en Python à l'aide de la bibliothèque "pandas"
+<br>&emsp; ● Interface Homme-Machine/GUI : en QT avec une interface très simpliste basée sur une boîte de dialogue
+<br>&emsp; ● Exportation des données : en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
+<br>&emsp; ● Mise en forme Excel : avec des routines VBA appelées par le script Python
+<br>&emsp; ● Réalisation du rapport Word : avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
 
 <br><b>Reprise de la bibliothèque publique de code :</b>
 <br><b>pybliometrics (version 3.5.2) :</b> https://github.com/pybliometrics-dev/pybliometrics
-<br><b>Article sur pybliometrics : </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a></p>
+<br><b>Article sur pybliometrics : </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a>
+<br><br><b>Documentation sur les API du groupe Elsevier :</b> https://nonprod-devportal.elsevier.com/
+</p>
 
 
 
@@ -33,7 +37,9 @@ Développer des outils permettant l'automatisation de certaines étapes de produ
 <p align="center">This repository contains the progress of the project to design and develop automated tools for producing bibliometric analysis reports.</p>
 
 <h3><b>Context:</b></h3>
-<p style="text-align: justify;">&emsp;<b> ● 12-week internship over the summer of 2023</b> (12 June to 1st September) at the <b>École de Technologie Supérieure, Montreal, Canada.</b>
+<p style="text-align: justify;">&emsp;<b> ● Author:</b> Benjamin Lepourtois
+<br>&emsp;<b> ● 12-week internship over the summer of 2023</b> (12 June to 1st September) at the <b>École de Technologie Supérieure, Montreal, Canada</b>
+<br>&emsp;<b> ● Tutored by:</b> Lokman SBOUI (PhD) & Judith BOISSONNEAULT, Vanessa AYOTTE and Sonia SECK (ÉTS library team)
 <br>&emsp;<b> ● Main mission: </b> <br>
 Develop tools to automate certain stages in the production of bibliometric analysis reports to help researchers understand the impact of their scientific contributions. </p>
 
@@ -41,14 +47,16 @@ Develop tools to automate certain stages in the production of bibliometric analy
 <p> We chose to use <b>a Python script to handle all the automation</b> of the reports.
 <br>&emsp; ● Data extraction: via the APIs of the miscellaneous platforms used (Scopus and SciVal) using the "pybliometrics" public library
 <br>&emsp; ● Data processing: in Python using the "pandas" library
-<br>&emsp; ● Human Machine Interface: in QT with a very simplistic interface based on a dialog box
+<br>&emsp; ● General User Interface (GUI): in QT with a very simplistic interface based on a dialog box
 <br>&emsp; ● Data export: in Python using the "pywin32" library to a MacroExcel "Workbook" file (.xlsm)
 <br>&emsp; ● Excel formatting: with VBA routines called by the Python script
 <br>&emsp; ● Production of the Word report: with VBA routines, called by the Python script, which export the data and graphs produced to a Word document.
 
 <br><b>Takeover of the code's public library:</b>
 <br><b>pybliometrics (version 3.5.2):</b> https://github.com/pybliometrics-dev/pybliometrics
-<br><b>Article on pybliometrics: </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a></p>
+<br><b>Article on pybliometrics: </b> <a href="https://www.sciencedirect.com/science/article/pii/S2352711019300573">Rose, Michael E. and John R. Kitchin (2019): "pybliometrics: Scriptable bibliometrics using a Python interface to Scopus", SoftwareX 10 (2019) 100263</a>
+<br><br><b>Elsevier API documentation :</b> https://nonprod-devportal.elsevier.com/
+</p>
 
 
 <h2 align="left"><br>À propos de moi / About me:</h2>
