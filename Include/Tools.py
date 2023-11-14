@@ -783,6 +783,11 @@ def Excel_part1(df: pd.DataFrame, nom_prenom: list, en_tete: list, annee_10y_ada
         feuille.Cells(1, 103).Value = year_list[-3]
         feuille.Cells(2, 102).Value = year_list[0]
         feuille.Cells(1, 106).Value = date_formated
+        # Convertir la chaîne de date en objet datetime
+        date_obj = datetime.strptime(date_formated, '%Y-%m-%d')
+        feuille.Cells(1, 107).Value = date_obj.day
+        feuille.Cells(1, 108).Value = date_obj.month
+        feuille.Cells(1, 109).Value = date_obj.year
 
 
         # Écrire les noms des colonnes dans la première ligne de la feuille de calcul d'après les conditions du cahier des charges

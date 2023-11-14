@@ -216,10 +216,10 @@ class Info(QDialog):
         info_widget = QTextEdit()
         info_widget.setReadOnly(True)  # Pour empêcher l'édition du texte
         
-        info_widget.append("<b>© Benjamin Lepourtois (2023)</b>")
+        info_widget.append("<b>AutoBib © Benjamin Lepourtois (2023)</b>")
         info_widget.append("")
         info_widget.append("<b>Pour citer ou reprendre ce logiciel :</b>")
-        info_widget.append("Benjamin Lepourtois. (2023). AutoBib. École de Technologie Supérieure. Sous licence MIT.\n\n")
+        info_widget.append("Lepourtois. Benjamin. (2023). AutoBib [logiciel]. Montréal, QC : École de Technologie Supérieure.  Sous licence MIT.\n\n")
 
         info_widget.append("<b>Reprise de la bibliothèque publique de code :</b>")
         info_widget.append("<b>pybliometrics (version 3.5.2) :</b> https://github.com/pybliometrics-dev/pybliometrics")
