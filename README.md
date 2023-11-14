@@ -59,6 +59,13 @@ Develop tools to automate certain stages in the production of bibliometric analy
 </p>
 
 
+<h1 align="center">Getting started</h1>
+<p>Go to the releases of this repository. 
+<br>Click on the latest stable release: AutoBib_Benjamin_Lepourtois (currently). 
+<br>Download the zipped folder named AutoBib.zip. 
+<br>Unzip it in your file explorer, and a PowerPoint documentation and installation video will be waiting for you to complete the installation!</p>
+
+
 <h2 align="left"><br>À propos de moi / About me:</h2>
 <p>(2023/08/25) &emsp;English below!
 <br>Je suis actuellement apprenti à l'École Centrale de Nantes (école d'ingénieur) et au sein du groupe français Thales en France (double statut: étudiant et salarié). 
