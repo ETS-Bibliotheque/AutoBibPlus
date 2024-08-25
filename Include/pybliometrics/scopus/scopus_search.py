@@ -122,6 +122,7 @@ class ScopusSearch(Search):
                  integrity_fields: Union[List[str], Tuple[str, ...]] = None,
                  integrity_action: str = "raise",
                  subscriber: bool = True,
+                timeout: Optional[int] = 300,  # Ajout du timeout ici, par défaut 5 minutes
                  **kwds: str
                  ) -> None:
         """Interaction with the Scopus Search API.
@@ -129,6 +130,7 @@ class ScopusSearch(Search):
         :param query: A string of the query as used in the Advanced Search
                      on scopus.com.  All fields except "INDEXTERMS()" and
                      "LIMIT-TO()" work.
+        :param timeout: Timeout for the API requests in seconds. Defaults to 300 (5 minutes)
         :param refresh: Whether to refresh the cached file if it exists or not.
                         If int is passed, cached file will be refreshed if the
                         number of days since last modification exceeds that value.
@@ -203,9 +205,10 @@ class ScopusSearch(Search):
         self._refresh = refresh
         self._query = query
         self._view = view
+        self._timeout = timeout  # Ajout du timeout
         Search.__init__(self, query=query, api='ScopusSearch', count=count,
                         cursor=subscriber, download=download,
-                        verbose=verbose, **kwds)
+                        verbose=verbose, timeout=timeout, **kwds)
 
     def __str__(self):
         """Print a summary string."""

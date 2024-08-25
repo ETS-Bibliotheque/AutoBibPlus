@@ -26,13 +26,11 @@ pip install -r requirements.txt
 # Créer un exécutable à partir du code source
 En étant toujours avec la console à la racine du projet & en ayant activé le VENV :
 ```batch
-pyinstaller --add-data "Logos;Logos" --add-data "GABARIT.docx;." --add-data "GABARIT.xlsm;." --add-data "maj_gen_py.bat;." --add-data "LICENSE;." --icon=Logos\ETS_Logo.ico --noconsole AutoBib.py
+pyinstaller --add-data "Logos;Logos" --add-data "GABARIT.docx;." --add-data "GABARITCOLLABS.docx;." --add-data "GABARIT.xlsm;." --add-data "GABARITCOLLABS.xlsm;." --add-data "INFO.xlsx;." --add-data "maj_gen_py.bat;." --add-data "LICENSE;." --icon=Logos\ETS_Logo.ico --noconsole AutoBibPlus.py
 ```
-
 Pour les prochains, il suffit d'utiliser le fichier de spécifications qui a été créé (vous pouvez d'ailleurs le modifier) :
 ```batch
-pyinstaller AutoBib.spec
+pyinstaller AutoBibPlus.spec
 ```
-
-Le dossier contenant l'exécutable et toutes les dépendances se trouve alors dans AutoBib\dist\AutoBib !
+Le dossier contenant l'exécutable et toutes les dépendances se trouve alors dans AutoBib\dist\AutoBibPlus !
 

@@ -1,5 +1,5 @@
 <!--
-Author: Benjamin Lepourtois <benjamin.lepourtois@gmail.com>
+Authors: Benjamin Lepourtois <benjamin.lepourtois@gmail.com> & Adji Touré <adji.toure.dev@gmail.com>
 Copyright: All rights reserved.
 See the license attached to the root of the project.
 -->
@@ -10,8 +10,10 @@ See the license attached to the root of the project.
 <br><br>English below!</p>
 
 <h3><b>Contexte:</b></h3>
-<p style="text-align: justify;">&emsp;<b> ● Auteur :</b> Benjamin Lepourtois
+<p style="text-align: justify;">&emsp;<b> ● Auteurs :</b> Benjamin Lepourtois & Adji Touré
 <br>&emsp;<b> ● Stage de 12 semaines sur l'été 2023</b> (12 juin au 1er septembre) dans l'<b>École de Technologie Supérieure, Montréal, Canada</b>
+<br>&emsp;<b> ● Repris sur l'été 2024 (du 03 juin au 23 août ) </b> 
+
 <br>&emsp;<b> ● Tutoré par :</b> Lokman SBOUI (PhD) & Judith BOISSONNEAULT, Vanessa AYOTTE et Sonia SECK (équipe bibliothèque de l'ÉTS)
 <br>&emsp;<b> ● Mission principale : </b> <br>
 Développer des outils permettant l'automatisation de certaines étapes de production de rapports d'analyses bibliométriques destinés à aider les chercheurs et chercheuses dans la planification de la mesure de l'impact de leurs contributions scientifiques.</p>
@@ -37,8 +39,10 @@ Développer des outils permettant l'automatisation de certaines étapes de produ
 <p align="center">This repository contains the progress of the project to design and develop automated tools for producing bibliometric analysis reports.</p>
 
 <h3><b>Context:</b></h3>
-<p style="text-align: justify;">&emsp;<b> ● Author:</b> Benjamin Lepourtois
+<p style="text-align: justify;">&emsp;<b> ● Authors:</b> Benjamin Lepourtois & Adji Touré
 <br>&emsp;<b> ● 12-week internship over the summer of 2023</b> (12 June to 1st September) at the <b>École de Technologie Supérieure, Montreal, Canada</b>
+<br>&emsp;<b> ● Resumed in summer 2024 (03 june to 23 august ) </b> 
+
 <br>&emsp;<b> ● Tutored by:</b> Lokman SBOUI (PhD) & Judith BOISSONNEAULT, Vanessa AYOTTE and Sonia SECK (ÉTS library team)
 <br>&emsp;<b> ● Main mission: </b> <br>
 Develop tools to automate certain stages in the production of bibliometric analysis reports to help researchers understand the impact of their scientific contributions. </p>

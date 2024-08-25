@@ -1,4 +1,5 @@
 # © 2023 Benjamin Lepourtois <benjamin.lepourtois@gmail.com>
+# © 2024 Adji Toure <adji.toure.dev@gmail.com>
 # Copyright: All rights reserved.
 # See the license attached to the root of the project.
 
@@ -23,6 +24,27 @@ Nous avons choisi d'utiliser un script Python pour gérer toute l'automatisation
   ● Exportation des données: en Python à l'aide de la bibliothèque "pywin32" vers un fichier "Workbook" MacroExcel (.xlsm)
   ● Mise en forme Excel: avec des routines VBA appelées par le script Python
   ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
+"""
+
+""" 
+Projet repris par Adji Touré
+Contexte :
+  ● Stage de 12 semaines sur l'été 2024 (3 juin au 23 août) à l'École de Technologie Supérieure, Montréal, Canada.
+
+Mission principale : 
+  ● Continuer le développement de l'outil en intégrant la production de rapports de colloaborations entre deux entités.
+
+Approche adoptée et tâches réalisées:
+  ● Observation de la méthodologie existante : Analyse des processus et méthodes actuels utilisés pour la réalisation des rapports bibliométriques.
+  ● Participation aux échanges avec les fournisseurs : Interaction avec les partenaires externes pour mieux comprendre les outils et services disponibles.
+  ● Évaluation de différentes approches : Identification et test de la faisabilité de diverses approches pour le projet, analyse des avantages et inconvénients de chacune, et présentation de recommandations à l'équipe pour sélectionner l'approche optimale.
+  ● Maîtrise des bibliothèques et APIs : Étude approfondie de la documentation sur l'exploitation des APIs, notamment celles d'Elsevier, et acquisition de compétences en utilisant des bibliothèques comme pybliometrics pour l'extraction de données et pandas pour leur traitement.
+  ● Développement de scripts pour la détection de noms : Création d'un script Python pour détecter et identifier les noms des professeurs de l'établissement en utilisant des techniques de correspondance approximative.
+  ● Automatisation des rapports : Développement de scripts Python pour :
+        Extraction des données bibliométriques via l'API Scopus.
+        Traitement et calcul des indicateurs requis.
+        Exportation des données vers Excel et intégration des graphiques dans des rapports Word via des routines VBA.
+        Amélioration de l'Interface Homme-Machine (IHM) : Développement d'une nouvelle branche pour l'IHM en Qt.
 """
 
 import os, threading, time, pytz

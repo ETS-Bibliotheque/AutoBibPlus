@@ -1,4 +1,5 @@
 # © 2023 Benjamin Lepourtois <benjamin.lepourtois@gmail.com>
+# © 2024 Adji Toure <adji.toure.dev@gmail.com>
 # Copyright: All rights reserved.
 # See the license attached to the root of the project.
 
@@ -25,17 +26,51 @@ Nous avons choisi d'utiliser un script Python pour gérer toute l'automatisation
   ● Réalisation du rapport Word: avec des routines VBA, appelées par le script Python, qui exportent les données et les graphiques réalisés sur un document Word
 """
 
+
+""" 
+Projet repris par Adji Touré
+Contexte :
+  ● Stage de 12 semaines sur l'été 2024 (3 juin au 23 août) à l'École de Technologie Supérieure, Montréal, Canada.
+
+Mission principale : 
+  ● Continuer le développement de l'outil en intégrant la production de rapports de colloaborations entre deux entités.
+
+Approche adoptée et tâches réalisées:
+  ● Observation de la méthodologie existante : Analyse des processus et méthodes actuels utilisés pour la réalisation des rapports bibliométriques.
+  ● Participation aux échanges avec les fournisseurs : Interaction avec les partenaires externes pour mieux comprendre les outils et services disponibles.
+  ● Évaluation de différentes approches : Identification et test de la faisabilité de diverses approches pour le projet, analyse des avantages et inconvénients de chacune, et présentation de recommandations à l'équipe pour sélectionner l'approche optimale.
+  ● Maîtrise des bibliothèques et APIs : Étude approfondie de la documentation sur l'exploitation des APIs, notamment celles d'Elsevier, et acquisition de compétences en utilisant des bibliothèques comme pybliometrics pour l'extraction de données et pandas pour leur traitement.
+  ● Développement de scripts pour la détection de noms : Création d'un script Python pour détecter et identifier les noms des professeurs de l'établissement en utilisant des techniques de correspondance approximative.
+  ● Automatisation des rapports : Développement de scripts Python pour :
+        Extraction des données bibliométriques via l'API Scopus.
+        Traitement et calcul des indicateurs requis.
+        Exportation des données vers Excel et intégration des graphiques dans des rapports Word via des routines VBA.
+        Amélioration de l'Interface Homme-Machine (IHM) : Développement d'une nouvelle branche pour l'IHM en Qt.
+"""
+
 import os, unicodedata, win32gui, time, re
 import pandas as pd
+import json
+from unidecode import unidecode
+from fuzzywuzzy import fuzz
 import win32com.client as win32
 from datetime import datetime
+from collections import Counter
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+from xlsxwriter import Workbook
 
 # Importations locales
 from .pybliometrics.scopus.abstract_citation import CitationOverview
 from .pybliometrics.scopus.author_retrieval import AuthorRetrieval
 from .pybliometrics.scopus.author_search import AuthorSearch
+from .pybliometrics.scopus.abstract_retrieval import AbstractRetrieval
 from .pybliometrics.scival.author_lookup import AuthorLookup
+from .pybliometrics.scival.institution_lookup import InstitutionLookup
 from .pybliometrics.utils.startup import DOCS_PATH
+from .pybliometrics.scopus.affiliation_retrieval import AffiliationRetrieval
+from .pybliometrics.scopus.affiliation_search import AffiliationSearch
+from Include.pybliometrics.scopus.scopus_search import ScopusSearch
 
 # Pour utiliser la console de l'IHM
 from PySide6.QtWidgets import QPlainTextEdit
@@ -44,7 +79,7 @@ from PySide6.QtWidgets import QPlainTextEdit
 text_style_warning = '"color: #D35230"'
 text_style_question = '"color: #0C5E31"'
 
-# Dictionnaire des traductions souhaitées
+# Dictionnaires des traductions souhaitées
 trad_en2fr = {
     'Article': 'Article',
     'Review': 'Article de synthèse',
@@ -61,6 +96,224 @@ trad_en2fr = {
     'Retracted': 'Rétractation',
     '∅': '∅'
 }
+countries_dict = {
+    "Afghanistan": "Afghanistan",
+    "Afrique du Sud": "South Africa",
+    "Albanie": "Albania",
+    "Algérie": "Algeria",
+    "Allemagne": "Germany",
+    "Andorre": "Andorra",
+    "Angola": "Angola",
+    "Antigua-et-Barbuda": "Antigua and Barbuda",
+    "Arabie Saoudite": "Saudi Arabia",
+    "Argentine": "Argentina",
+    "Arménie": "Armenia",
+    "Australie": "Australia",
+    "Autriche": "Austria",
+    "Azerbaïdjan": "Azerbaijan",
+    "Bahamas": "Bahamas",
+    "Bahreïn": "Bahrain",
+    "Bangladesh": "Bangladesh",
+    "Barbade": "Barbados",
+    "Belgique": "Belgium",
+    "Belize": "Belize",
+    "Bénin": "Benin",
+    "Bhoutan": "Bhutan",
+    "Biélorussie": "Belarus",
+    "Birmanie": "Myanmar",
+    "Bolivie": "Bolivia",
+    "Bosnie-Herzégovine": "Bosnia and Herzegovina",
+    "Botswana": "Botswana",
+    "Brésil": "Brazil",
+    "Brunei": "Brunei",
+    "Bulgarie": "Bulgaria",
+    "Burkina Faso": "Burkina Faso",
+    "Burundi": "Burundi",
+    "Cambodge": "Cambodia",
+    "Cameroun": "Cameroon",
+    "Canada": "Canada",
+    "Cap-Vert": "Cape Verde",
+    "Chili": "Chile",
+    "Chine": "China",
+    "Chypre": "Cyprus",
+    "Colombie": "Colombia",
+    "Comores": "Comoros",
+    "Congo-Brazzaville": "Republic of the Congo",
+    "Congo-Kinshasa": "Democratic Republic of the Congo",
+    "Corée du Nord": "North Korea",
+    "Corée du Sud": "South Korea",
+    "Costa Rica": "Costa Rica",
+    "Côte d'Ivoire": "Ivory Coast",
+    "Croatie": "Croatia",
+    "Cuba": "Cuba",
+    "Danemark": "Denmark",
+    "Djibouti": "Djibouti",
+    "Dominique": "Dominica",
+    "Égypte": "Egypt",
+    "Émirats Arabes Unis": "United Arab Emirates",
+    "Équateur": "Ecuador",
+    "Érythrée": "Eritrea",
+    "Espagne": "Spain",
+    "Estonie": "Estonia",
+    "États-Unis": "United States",
+    "Éthiopie": "Ethiopia",
+    "Fidji": "Fiji",
+    "Finlande": "Finland",
+    "France": "France",
+    "Gabon": "Gabon",
+    "Gambie": "Gambia",
+    "Géorgie": "Georgia",
+    "Ghana": "Ghana",
+    "Grèce": "Greece",
+    "Grenade": "Grenada",
+    "Guatemala": "Guatemala",
+    "Guinée": "Guinea",
+    "Guinée-Bissau": "Guinea-Bissau",
+    "Guinée équatoriale": "Equatorial Guinea",
+    "Guyana": "Guyana",
+    "Haïti": "Haiti",
+    "Honduras": "Honduras",
+    "Hongrie": "Hungary",
+    "Inde": "India",
+    "Indonésie": "Indonesia",
+    "Irak": "Iraq",
+    "Iran": "Iran",
+    "Irlande": "Ireland",
+    "Islande": "Iceland",
+    "Israël": "Israel",
+    "Italie": "Italy",
+    "Jamaïque": "Jamaica",
+    "Japon": "Japan",
+    "Jordanie": "Jordan",
+    "Kazakhstan": "Kazakhstan",
+    "Kenya": "Kenya",
+    "Kirghizistan": "Kyrgyzstan",
+    "Kiribati": "Kiribati",
+    "Koweït": "Kuwait",
+    "Laos": "Laos",
+    "Lesotho": "Lesotho",
+    "Lettonie": "Latvia",
+    "Liban": "Lebanon",
+    "Liberia": "Liberia",
+    "Libye": "Libya",
+    "Liechtenstein": "Liechtenstein",
+    "Lituanie": "Lithuania",
+    "Luxembourg": "Luxembourg",
+    "Macédoine": "North Macedonia",
+    "Madagascar": "Madagascar",
+    "Malaisie": "Malaysia",
+    "Malawi": "Malawi",
+    "Maldives": "Maldives",
+    "Mali": "Mali",
+    "Malte": "Malta",
+    "Maroc": "Morocco",
+    "Marshall": "Marshall Islands",
+    "Maurice": "Mauritius",
+    "Mauritanie": "Mauritania",
+    "Mexique": "Mexico",
+    "Micronésie": "Micronesia",
+    "Moldavie": "Moldova",
+    "Monaco": "Monaco",
+    "Mongolie": "Mongolia",
+    "Monténégro": "Montenegro",
+    "Mozambique": "Mozambique",
+    "Namibie": "Namibia",
+    "Nauru": "Nauru",
+    "Népal": "Nepal",
+    "Nicaragua": "Nicaragua",
+    "Niger": "Niger",
+    "Nigéria": "Nigeria",
+    "Niue": "Niue",
+    "Norvège": "Norway",
+    "Nouvelle-Zélande": "New Zealand",
+    "Oman": "Oman",
+    "Ouganda": "Uganda",
+    "Ouzbékistan": "Uzbekistan",
+    "Pakistan": "Pakistan",
+    "Palaos": "Palau",
+    "Palestine": "Palestine",
+    "Panama": "Panama",
+    "Papouasie-Nouvelle-Guinée": "Papua New Guinea",
+    "Paraguay": "Paraguay",
+    "Pays-Bas": "Netherlands",
+    "Pérou": "Peru",
+    "Philippines": "Philippines",
+    "Pologne": "Poland",
+    "Portugal": "Portugal",
+    "Qatar": "Qatar",
+    "Roumanie": "Romania",
+    "Royaume-Uni": "United Kingdom",
+    "Russie": "Russia",
+    "Rwanda": "Rwanda",
+    "Saint-Kitts-et-Nevis": "Saint Kitts and Nevis",
+    "Saint-Vincent-et-les-Grenadines": "Saint Vincent and the Grenadines",
+    "Sainte-Lucie": "Saint Lucia",
+    "Salomon": "Solomon Islands",
+    "Salvador": "El Salvador",
+    "Samoa": "Samoa",
+    "Sao Tomé-et-Principe": "Sao Tome and Principe",
+    "Sénégal": "Senegal",
+    "Serbie": "Serbia",
+    "Seychelles": "Seychelles",
+    "Sierra Leone": "Sierra Leone",
+    "Singapour": "Singapore",
+    "Slovaquie": "Slovakia",
+    "Slovénie": "Slovenia",
+    "Somalie": "Somalia",
+    "Soudan": "Sudan",
+    "Soudan du Sud": "South Sudan",
+    "Sri Lanka": "Sri Lanka",
+    "Suède": "Sweden",
+    "Suisse": "Switzerland",
+    "Suriname": "Suriname",
+    "Swaziland": "Eswatini",
+    "Syrie": "Syria",
+    "Tadjikistan": "Tajikistan",
+    "Tanzanie": "Tanzania",
+    "Tchad": "Chad",
+    "Tchéquie": "Czech Republic",
+    "Thaïlande": "Thailand",
+    "Timor oriental": "East Timor",
+    "Togo": "Togo",
+    "Tonga": "Tonga",
+    "Trinité-et-Tobago": "Trinidad and Tobago",
+    "Tunisie": "Tunisia",
+    "Turkménistan": "Turkmenistan",
+    "Turquie": "Turkey",
+    "Tuvalu": "Tuvalu",
+    "Ukraine": "Ukraine",
+    "Uruguay": "Uruguay",
+    "Vanuatu": "Vanuatu",
+    "Vatican": "Vatican City",
+    "Venezuela": "Venezuela",
+    "Vietnam": "Vietnam",
+    "Yémen": "Yemen",
+    "Zambie": "Zambia",
+    "Zimbabwe": "Zimbabwe"
+}
+
+def remove_accents(input_str : str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+def get_country_in_english(country_name : str):
+    country_name_normalized = remove_accents(country_name).lower()
+    for key in countries_dict.keys():
+        if remove_accents(key).lower().replace(' ', '') == country_name_normalized:
+            return countries_dict[key]
+    return 'NULL'
+def get_country_in_french(country_name : str):
+    country_name_normalized = remove_accents(country_name).lower()
+    for key in countries_dict.keys():
+        if remove_accents(key).lower().replace(' ', '') == country_name_normalized:
+            return key
+    return 'NULL'
+def get_country_for_request(country_name : str):
+    country_name = get_country_in_english(country_name)
+    if ' ' in country_name:
+        country_name = country_name.replace(' ', ' AND ')
+        return country_name
+    return country_name
 
 # Inverser le dictionnaire en échangeant les clés et les valeurs
 trad_fr2en = {v: k for k, v in trad_en2fr.items()}
@@ -125,6 +378,17 @@ def retrieval(choix: int, s: AuthorSearch, console: QPlainTextEdit):
 
     return author_eid, au_retrieval
 
+# Fonction qui retourne le scopus ID et l'instance de AffiliationRetrieval sur l'entité selectionnée
+def affRetrieval(choix: int, s: AffiliationSearch, console: QPlainTextEdit):
+    # Récupération de l'identifier de l'eid en fonction de la personne sélectionné
+    affiliation_eid = s.affiliations[choix].eid
+    affiliation_eid = affiliation_eid.split("s2.0-")[-1] # récupère le 2ème élément créé avec le split (donc eid)
+
+    # Affiche un résumé sur l'entité sélectionnée
+    aff_retrieval = AuthorRetrieval(affiliation_eid, refresh=True)
+
+    return affiliation_eid, aff_retrieval
+
 # Fonction qui retourne un DataFrame sur les types de documents avec leur nombre en fonction de la personne sélectionnée
 def tous_les_docs_chercheur(au_retrieval: AuthorRetrieval, console: QPlainTextEdit):
     # Récupère tous les documents publiés de la personne et les stock dans un DataFrame
@@ -155,7 +419,11 @@ def tous_les_docs_chercheur(au_retrieval: AuthorRetrieval, console: QPlainTextEd
 
     return df
 
-
+# Fonction qui retourne un DataFrame contenant toutes les collaborations d'une entité
+def tous_les_docs_entite(aff_retrieval: AffiliationRetrieval):
+    # Récupère tous les documents publiés de la personne et les stock dans un DataFrame
+    docs = pd.DataFrame(aff_retrieval.__str__())
+    return docs
 
 # Fonction qui retourne vrai si la sélection des types est correcte
 def selection_types_de_documents(selected_types: list, len_df: int, console: QPlainTextEdit):
@@ -976,3 +1244,751 @@ def Excel_part2(excel, classeur, df: pd.DataFrame, df_SNIP: pd.DataFrame, df_Col
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
 
+
+#-------------------------------------Nouvelles fonctions d'Autobib+-------------------------------------------------
+
+def collaborationExtract(researchersA: list = None, institutionsA: list = None, researchersB: list = None, institutionsB: list = None,\
+                         country: str = None, start_year: int = None, end_year: int = None, keys: list = None, console: QPlainTextEdit = None):
+    # Construction de la requete pour les collabs entre l'entité A et l'entité B
+    query_part2 = []
+    if researchersA:
+        query_part1 = [f'AU-ID({researcher})' for researcher in researchersA]
+    elif institutionsA:
+        query_part1 = [f'AF-ID({institution})' for institution in institutionsA]
+    else :
+        return
+    query_partA = " OR ".join(query_part1)
+    
+    if country:
+        query_part2.append(f'AFFILCOUNTRY({country})')
+    
+    elif researchersB:
+        researcher_query = " OR ".join([f'AU-ID({researcher})' for researcher in researchersB])
+        query_part2.append(f'({researcher_query})')
+    
+    elif institutionsB:
+        institution_query = " OR ".join([f'AF-ID({institution})' for institution in institutionsB])
+        query_part2.append(f'({institution_query})')
+    
+    if start_year:
+        query_part2.append(f'PUBYEAR AFT {start_year-1}')
+    
+    if end_year:
+        query_part2.append(f'PUBYEAR BEF {end_year+1}')
+
+    query_partB = " AND ".join(query_part2)
+    
+    RequestQuery = f"({query_partA}) AND ({query_partB})"
+    
+    try:
+        # Recherche sur Scopus avec la clé API et le Token
+        search = ScopusSearch(query=RequestQuery, api_key= keys[0], token= keys[1])
+        if search.results is not None:
+            # Extraction des résultats
+            results = []
+            for collaboration in search.results:
+                results.append({
+                    'EID': collaboration.eid,
+                    'Abstract': getAbstract(collaboration.eid, keys),
+                    'Title': collaboration.title,
+                    # 'Source title': collaboration.subtype,
+                    'Authors': collaboration.author_names,
+                    'Authors ID': collaboration.author_ids,
+                    'Authors affiliations': collaboration.author_afids,
+                    'PublicationName': collaboration.publicationName,
+                    'Year': collaboration.coverDisplayDate[-4:],  # Garder les 4 derniers chiffres de la date (l'annee)
+                    'Cited By': collaboration.citedby_count,
+                    'DOI': collaboration.doi,
+                    'Authors keywords': collaboration.authkeywords, 
+                    # 'AggregationType': collaboration.aggregationType,
+                    'Nbre de publications': collaboration.afid,
+                    'affilname': collaboration.affilname,
+                    'Countries': collaboration.affiliation_country,
+                    'DocumentType': collaboration.subtype, 
+                    'Funding details': collaboration.fund_sponsor,
+                    'Funding texts': collaboration.fund_acr,
+                })
+            
+            # Conversion des résultats en DataFrame pandas
+            df = pd.DataFrame(results)
+            return df
+        else: 
+            console.append('<p style={}>! Aucune collaboration trouvée.</p>'.format(text_style_warning))
+            return None
+    except Exception as e: 
+        return None
+# Retourne des informations sur le profil recherché 
+# On peut faire la recherche à partir d'un nom d'un chercher ou d'un identifiant  
+def getEntityProfile(selection: str, entity: str, keys: list, rechercheParId: bool):
+
+    if selection == '1':
+        if rechercheParId is False : 
+            nomComplet = entity.split(',')
+            query_entity = f'authlast({nomComplet[0]}) and authfirst ({nomComplet[1]})'
+            search = AuthorSearch(query=query_entity, api_key= keys[0], token= keys[1], refresh=True)
+        else : 
+            query_entity = f'AU-ID({entity})'
+            search = AuthorSearch(query=query_entity, api_key= keys[0], token= keys[1])
+        # Vérification des résultats
+        if search.authors is None:
+            return 'NONE'
+        else:
+            author_info = []
+            for element in search.authors:
+                author_info.append(
+                    f"Nom : {element.givenname} {element.surname}\n"
+                    f"ID : {element.eid}\n"
+                    f"ORCID : {element.orcid}\n"
+                    f"Affiliation : {element.affiliation}\n"
+                    f"Nombre total de documents : {element.documents}\n"
+                )
+            return author_info
+    elif selection == '2':
+        query_entity = f'AF-ID({entity})'
+        search = AffiliationSearch(query=query_entity, api_key= keys[0], token= keys[1])
+        if search.affiliations is None:
+            return 'NONE'
+        else:
+            for element in search.affiliations:
+                institution_info = (
+                    f"Nom : {element.name}\n"
+                    f"ID : {element.eid}\n"
+                    f"Localisation : {element.city}, {element.country}\n"
+                    # f"Parent : {element.parent}\n"
+                )
+            return institution_info
+    else :
+        return
+# Limite les plages de colloborations à année courante -20 , année courante +1
+def getSelectedYears(response:str):
+        if response == '' :
+            start_year = datetime.now().year-5
+            end_year = datetime.now().year
+        elif ',' in response: 
+            selected_years = response.split(',')
+            # Recuperer les limites de la plage séléctionnée
+            start_year = int(selected_years[0])
+            end_year = int(selected_years[1])
+            if start_year < datetime.now().year-20 or end_year > datetime.now().year + 1: 
+                start_year = 'NULL'
+                end_year = 'NULL'
+        else:
+            start_year = 'NULL'
+            end_year = 'NULL'
+        return start_year, end_year
+
+def count_document_types(df: pd.DataFrame):
+    # Initialiser un dictionnaire pour stocker les comptes de chaque type de document
+    doc_type_counts = {
+        'ar': 0,
+        're': 0,
+        'cp': 0,
+        'ch': 0,
+        'ed': 0,
+        'bk': 0,
+        'dp': 0,
+        'er': 0,
+        'sh': 0, 
+    }
+    
+    if 'DocumentType' in df.columns:
+        # Compter les occurrences de chaque type de document
+        doc_type_counts = df['DocumentType'].value_counts().to_dict()
+        
+        # Ajouter les types de documents manquants avec un compte de 0
+        for doc_type in ['ar', 're', 'cp', 'ch', 'ed', 'bk', 'dp', 'er', 'sh']:
+            if doc_type not in doc_type_counts:
+                doc_type_counts[doc_type] = 0
+        # Créer une DataFrame à partir du dictionnaire
+        doc_type_df = pd.DataFrame(list(doc_type_counts.items()), columns=['DocumentType', 'Count'])
+        
+        # Ajouter cette nouvelle DataFrame à la DataFrame originale (comme une nouvelle colonne)
+        df_with_counts = pd.concat([df, doc_type_df], axis=1)
+        # Remplacer les NaN par une chaîne vide
+        df_with_counts = df_with_counts.fillna('')
+
+    # Retourner la DataFrame originale
+    return df_with_counts
+
+
+def countAuthorsInCollab(df : pd.DataFrame, keys: list):
+        author_counts = {}
+        Author_IDs = {}
+        Author_Aff = {}
+        if 'Authors' in df.columns:
+            authors = df['Authors'].dropna().str.split(';')
+            authorsIDs = df['Authors ID'].dropna().str.split(';')
+            afIDs = df['Authors affiliations'].dropna().str.split(';')
+            for afID_list, author_list, authorsID_list in zip(afIDs, authors, authorsIDs):
+                for afID, author, authorID in zip(afID_list, author_list, authorsID_list):
+                    author = author.strip()
+                    authorID = authorID.strip()
+                    afID = afID.strip()
+                    if not afID == '':
+                        name_parts = author.split(', ')
+                        last_name = name_parts[0].strip()
+                        first_name = name_parts[1].strip() if len(name_parts) > 1 else ""
+                        update_entity_author_counts(author_counts, Author_IDs, 
+                                                                Author_Aff, last_name, first_name, 
+                                                                author, authorID, keys)
+            author_df = pd.DataFrame(list(author_counts.items()), columns=['Author', 'Nbre de publications'])
+             # Ajouter les colonne pour les IDs , affiliation des auteurs
+            author_df['AU-ID'] = author_df['Author'].map(lambda author: ', '.join(Author_IDs.get(author, [])))
+            author_df['AU-ID']  = author_df['AU-ID'].str.replace(', ', '', regex=False)
+            author_df['Affiliation'] = author_df['Author'].map(lambda author: ', '.join(Author_Aff.get(author, [])))
+            author_df['Affiliation']  = author_df['Affiliation'].str.replace(', ', '', regex=False)
+            # Trier les résultats
+            author_df = author_df.sort_values(by='Nbre de publications', ascending=False).reset_index(drop=True)
+            return author_df
+        
+def countInstitutionsInCollab(df : pd.DataFrame, collabCountry : str):
+        institution_counts = {}
+        if 'affilname' in df.columns and 'Countries' in df.columns:
+            affiliations = df['affilname'].dropna().str.split(';')
+            countries = df['Countries'].dropna().str.split(';')
+                
+            for affil_list, country_list in zip(affiliations, countries):
+                for affil, country in zip(affil_list, country_list):
+                    affil = affil.strip()
+                    if country.strip() == collabCountry:
+                        if affil in institution_counts:
+                            institution_counts[affil] += 1
+                        else:
+                            institution_counts[affil] = 1
+
+            institution_df = pd.DataFrame(list(institution_counts.items()), columns=['Institution', 'Nbre de publications en collaboration'])
+            institution_df = institution_df.sort_values(by='Nbre de publications en collaboration', ascending=False).reset_index(drop=True)
+            return institution_df
+
+def countEntityAuthorsInCollab(df : pd.DataFrame, collabEntityList : list, keys: list):
+    entityAuthor_counts = {}
+    entityAuthor_IDs = {}
+    entityAuthor_Aff = {}
+    if 'Authors' in df.columns and 'Authors affiliations' in df.columns:
+        authorsIDs = df['Authors ID'].dropna().str.split(';')
+        afIDs = df['Authors affiliations'].dropna().str.split(';')
+        authors = df['Authors'].dropna().str.split(';')
+        # eids = df['EID'].dropna().str.split(';')
+        for collabEntity in collabEntityList:
+            for afID_list, author_list, authorsID_list in zip(afIDs, authors, authorsIDs):
+                for afID, author, authorID in zip(afID_list, author_list, authorsID_list):
+                    author = author.strip()
+                    authorID = authorID.strip()
+                    afID = afID.strip()
+                    # collabEntity = collabEntity
+                    collabEntity = collabEntity.strip()
+                    name_parts = author.split(', ')
+                    last_name = name_parts[0].strip()
+                    first_name = name_parts[1].strip() if len(name_parts) > 1 else ""
+                    if '-' in afID:
+                        affs = afID.split('-')
+                        for aff in affs:
+                            if aff == collabEntity:
+                                update_entity_author_counts(entityAuthor_counts, entityAuthor_IDs, 
+                                                            entityAuthor_Aff, last_name, first_name, 
+                                                            author, authorID, collabEntity, keys)
+                    elif afID.strip() == collabEntity:
+                         update_entity_author_counts(entityAuthor_counts, entityAuthor_IDs, 
+                                                    entityAuthor_Aff, last_name, first_name, 
+                                                    author, authorID, collabEntity, keys)
+
+        # Convertir les dictionnaires en DataFrame
+        entity_author_df = pd.DataFrame(list(entityAuthor_counts.items()), columns=['Auteur', 'Nbre de publications'])
+            
+        # Ajouter les colonne pour les IDs , affiliation des auteurs
+        entity_author_df['AU-ID'] = entity_author_df['Auteur'].map(lambda author: ', '.join(entityAuthor_IDs.get(author, [])))
+        entity_author_df['AU-ID']  = entity_author_df['AU-ID'].str.replace(', ', '', regex=False)
+        entity_author_df['Affiliation'] = entity_author_df['Auteur'].map(lambda author: ', '.join(entityAuthor_Aff.get(author, [])))
+        entity_author_df['Affiliation']  = entity_author_df['Affiliation'].str.replace(', ', '', regex=False)
+            
+        # Trier les résultats
+        entity_author_df = entity_author_df.sort_values(by='Nbre de publications', ascending=False).reset_index(drop=True)
+        return entity_author_df
+    else:
+        return
+    
+def update_entity_author_counts(entityAuthor_counts, entityAuthor_IDs, entityAuthor_Aff, 
+                                last_name, first_name, author, authorID, keys, collabEntity = None):
+    key = None
+    for existing_author in entityAuthor_counts.keys():
+        existing_last_name, existing_first_name = existing_author.split(', ')
+        if existing_last_name == last_name and existing_first_name.startswith(first_name[0]):
+            key = existing_author
+            break
+    
+    if key:
+        # Combine counts and keep the author with the longer first name
+        entityAuthor_counts[key] += 1
+        if len(first_name) > len(key.split(', ')[1]):
+            # Update the author ID and affiliation
+            entityAuthor_IDs[key] = authorID
+            if collabEntity:
+                entityAuthor_Aff[key] = getAffiliation(keys, collabEntity)
+    else:
+        # New author entry
+        full_name = f"{last_name}, {first_name}"
+        entityAuthor_counts[full_name] = 1
+        entityAuthor_IDs[full_name] = authorID
+        if collabEntity:
+            entityAuthor_Aff[full_name] = getAffiliation(keys, collabEntity)
+
+def load_ETS_profs(console: QPlainTextEdit):
+    try : 
+        file_name = "INFO.xlsx"
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name, sheet_name='Noms_Profs_ETS')
+            return df
+    except Exception :
+        console.append('<p style={}>! Liste des profésseurs ETS non trouvé.</p>'.format(text_style_warning))
+        return
+
+def load_ORN(console: QPlainTextEdit):
+    try : 
+        file_name = "INFO.xlsx"
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name, sheet_name='Liste_ORN')
+            return df
+    except Exception :
+        console.append('<p style={}>! Liste des ORN non trouvée.</p>'.format(text_style_warning))
+        return
+    
+def load_UQ(console: QPlainTextEdit):
+    try : 
+        file_name = "INFO.xlsx"
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name, sheet_name='Reseau_UQ')
+            return df
+    except Exception :
+        console.append('<p style={}>! Liste des établissements de l\'UQ non trouvée.</p>'.format(text_style_warning))
+        return
+def load_ETS(console: QPlainTextEdit):
+    try : 
+        file_name = "INFO.xlsx"
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name, sheet_name='Reseau_ETS')
+            return df
+    except Exception :
+        console.append('<p style={}>! Liste des établissements de l\'ETS non trouvée.</p>'.format(text_style_warning))
+        return
+    
+def add_affiliation_ids_to_list(df: pd.DataFrame, affiliation_list: list, console: QPlainTextEdit):
+    try:
+        # Vérifie si la colonne 'Affiliation ID' existe dans la DataFrame
+        if 'Affiliation ID' in df.columns:
+            # Récupère toutes les valeurs de la colonne 'Affiliation ID' et les ajoute à la liste
+            affiliation_list.extend([str(aff_id) for aff_id in df['Affiliation ID'].tolist()])
+            return affiliation_list
+    except Exception:
+        console.append('<p style={}>! Erreur lors de la lecture de la colonne Affiliation ID.</p>'.format(text_style_warning))
+        return
+
+def findFuzzyMatches(df1: pd.DataFrame, df2: pd.DataFrame, console: QPlainTextEdit):    
+    if 'Author' not in df1.columns or 'Nom_prof_ETS' not in df2.columns:
+        console.append('<p style={}>! Colonnes Author et/ou Nom_prof_ETS manquantes dans les fichiers</p>'.format(text_style_warning))
+        return
+    else:
+        df1[['Nom', 'Prenom']] = df1['Author'].str.split(', ', expand=True)
+        df2[['Nom', 'Prenom']] = df2['Nom_prof_ETS'].str.split(', ', expand=True)
+        
+        # Remove accents and hyphens, convert to lowercase
+        df1['Nom'] = df1['Nom'].fillna('').apply(lambda x: unidecode(x).replace('-', ' ').lower())
+        df2['Nom'] = df2['Nom'].fillna('').apply(lambda x: unidecode(x).replace('-', ' ').lower())
+        df1['Prenom'] = df1['Prenom'].fillna('').apply(lambda x: unidecode(x).replace('-', ' ').lower())
+        df2['Prenom'] = df2['Prenom'].fillna('').apply(lambda x: unidecode(x).replace('-', ' ').lower())
+        
+        authors = df1[['Nom', 'Prenom', 'Author']].dropna().values.tolist()
+        publications = df1.set_index('Author')['Nbre de publications'].to_dict()
+        profs = df2[['Nom', 'Prenom', 'Nom_prof_ETS', 'Département']].dropna().values.tolist()
+        
+        matches = []
+        non_matches = []
+        fuzzy_matches = []  # To store fuzzy matched authors 
+        
+        for i, (nom_auteur, prenom_auteur, auteur_complet) in enumerate(authors):
+            correspondance_trouvee = False
+            for nom_prof, prenom_prof, prof_complet, departement  in profs:
+                if nom_auteur == nom_prof and (
+                    (len(prenom_auteur) > 2 and prenom_auteur[:2] == prenom_prof[:2]) or 
+                    (len(prenom_auteur) <= 2 and prenom_auteur[0] == prenom_prof[0])
+                ):
+                    matches.append((auteur_complet, prof_complet, departement, publications.get(auteur_complet, 'N/A')))
+                    correspondance_trouvee = True
+                    break
+            if not correspondance_trouvee:
+                non_matches.append(auteur_complet)
+                
+        # Second round with fuzzy matching
+        for i, auteur_complet in enumerate(non_matches):
+            best_match = None
+            highest_ratio = 0
+            for nom_prof, prenom_prof, prof_complet, departement in profs:
+                ratio = fuzz.ratio(f"{auteur_complet}", f" {prof_complet}")
+                if ratio > highest_ratio:
+                    highest_ratio = ratio
+                    best_match = prof_complet
+            if highest_ratio > 80:
+                matches.append((auteur_complet, best_match, departement, publications.get(auteur_complet, 'N/A')))
+                fuzzy_matches.append(auteur_complet)
+                non_matches.remove(auteur_complet)
+        
+        matches_df = pd.DataFrame(matches, columns=['Auteur', 'Professeur_ETS_correspondant', 'Département', 'Nbre de publications'])
+        non_matches_df = pd.DataFrame(non_matches, columns=['Author'])
+        non_matches_df['Nbre de publications'] = non_matches_df['Author'].map(publications)
+        return matches_df, non_matches_df, fuzzy_matches
+def findOthersEtsAffiliations(non_matches_df: pd.DataFrame, all_collabs_df : pd.DataFrame):
+        results = []
+        if 'affilname' in all_collabs_df.columns and 'Authors' in all_collabs_df.columns:
+            affiliations = all_collabs_df['affilname'].dropna().str.split(';')
+            authors = all_collabs_df['Authors'].dropna().str.split(';')
+            non_matched_authors = non_matches_df['Author']
+            nbr_publications = non_matches_df['Nbre de publications']
+
+            for non_matched_author, nbr_publication in zip(non_matched_authors, nbr_publications) :
+                gotIt = False
+                for affil_list, author_list in zip(affiliations, authors):
+                    for affil, author in zip(affil_list, author_list):
+                        affil = affil.strip()
+                        if author.strip() == non_matched_author:
+                            if affil  == 'École de Technologie Supérieure':
+                                results.append({
+                                'Author': non_matched_author,
+                                'Nbre de publications' : nbr_publication
+                                    })
+                                gotIt = True
+                        if gotIt == True:
+                            break
+                    if gotIt == True:
+                        break
+                        
+        # Conversion des résultats en DataFrame pandas
+        other_ets_authors_df = pd.DataFrame(results)
+        return other_ets_authors_df
+
+def findCollabCountryAffiliations(non_matches_df: pd.DataFrame, all_collabs_df : pd.DataFrame, collabCountry : str, keys : list):
+        results = []
+        if 'Authors' in all_collabs_df.columns: 
+            authors = all_collabs_df['Authors'].dropna().str.split(';')             
+            # countries = all_collabs_df['Countries'].dropna().str.split(';')
+            afIDs = all_collabs_df['Authors affiliations'].dropna().str.split(';')
+            non_matched_authors = non_matches_df['Author']
+            nbr_publications = non_matches_df['Nbre de publications']
+
+            for non_matched_author, nbr_publication in zip(non_matched_authors, nbr_publications) :
+                gotIt = False
+                for author_list, afID_list in zip( authors, afIDs):
+                    for author, afID in zip(author_list, afID_list):
+                        if '-' in afID:
+                            affs = afID.split('-')
+                            for aff in affs:
+                                if not aff == '':
+                                    affilname, countryCollab = getAffiliationCountry(aff, keys)
+                                    if author.strip() == non_matched_author and countryCollab == collabCountry :
+                                        results.append({
+                                        'Author': non_matched_author,
+                                        'Affiliation' : affilname,
+                                        'Nbre de publications' : nbr_publication
+                                            })
+                                        gotIt = True
+                                if gotIt == True:
+                                    break
+
+                        else : 
+                            if not afID == '':
+                                affilname, countryCollab = getAffiliationCountry(afID, keys)
+                                if author.strip() == non_matched_author and countryCollab == collabCountry:
+                                    results.append({
+                                    'Author': non_matched_author,
+                                    'Affiliation' : affilname,
+                                    'Nbre de publications' : nbr_publication
+                                        })
+                                    gotIt = True
+                            if gotIt == True:
+                                break
+                    if gotIt == True:
+                        break
+                        
+        # Conversion des résultats en DataFrame pandas
+        other_authors_df = pd.DataFrame(results)
+        return other_authors_df
+
+    
+def saveResults(fileName: str, matches_df: pd.DataFrame, other_ets_authors_df : pd.DataFrame, other_authors_df : pd.DataFrame, institutions_df : pd.DataFrame, allResults_df : pd.DataFrame):
+        directory = DOCS_PATH[0] + '/' 
+        file_path = os.path.join(directory, fileName)
+        if not file_path.endswith('.xlsx'):
+            file_path += '.xlsx'
+                
+        # Sort dataframes by 'Nbre de publications' before saving
+        matches_df['Nbre de publications'] = matches_df['Nbre de publications'].replace('N/A', 0).astype(int)
+        matches_df = matches_df.sort_values(by='Nbre de publications', ascending=False)
+        other_ets_authors_df['Nbre de publications'] = other_ets_authors_df['Nbre de publications'].replace('N/A', 0).astype(int)
+        other_ets_authors_df = other_ets_authors_df.sort_values(by='Nbre de publications', ascending=False)
+        other_authors_df['Nbre de publications'] = other_authors_df['Nbre de publications'].replace('N/A', 0).astype(int)
+        other_authors_df = other_authors_df.sort_values(by='Nbre de publications', ascending=False)
+            
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            matches_df.to_excel(writer, sheet_name='professeurs_ETS', index=False)
+            other_ets_authors_df.to_excel(writer, sheet_name='autres_ETS', index=False)
+            other_authors_df.to_excel(writer, sheet_name='autres', index=False)
+            institutions_df.to_excel(writer, sheet_name='Institutions', index=False)
+            allResults_df.to_excel(writer, sheet_name='allResults', index=False)
+
+def highlight_fuzzy_matches(fileName, fuzzy_matches):
+        directory = DOCS_PATH[0] + '/' 
+        file_path = os.path.join(directory, fileName)
+        wb = load_workbook(file_path)
+        ws = wb['professeurs_ETS']
+        fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+        for row in ws.iter_rows(min_row=2, max_col=3, max_row=ws.max_row):
+            if row[0].value in fuzzy_matches:
+                for cell in row:
+                    cell.fill = fill
+        wb.save(file_path)
+
+# Fonction qui permet d'exporter les données sur le gabarit Excel et d'appeler les
+# routines VBA du gabarit
+def Excel_collabs_ETS_pays(fileName: str, matches_df: pd.DataFrame, other_ets_authors_df: pd.DataFrame, other_authors_df: pd.DataFrame, institutions_df: pd.DataFrame, allResults_df: pd.DataFrame, fuzzy_matches_df: pd.DataFrame, country : str, debut : str, fin : str, date : str):
+
+    # Remplacer l'extension par .docx
+    rapportPath = DOCS_PATH[0] + '\\' + os.path.splitext(fileName)[0] + '.docx'
+    gabaritPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'GABARITCOLLABS.docx')
+    if 'Count' in allResults_df.columns:
+            totalDoc = allResults_df['Count']
+    infos = {
+    'pathToFile': [gabaritPath, rapportPath, 0, 0, 0, 0, 0, 0, 0],
+    'totalCount': [allResults_df.shape[0], 0, 0, 0, 0, 0, 0, 0, 0],
+    'totalDoc': [totalDoc[0], totalDoc[1], totalDoc[2], totalDoc[3], totalDoc[4], totalDoc[5], totalDoc[6], totalDoc[7], totalDoc[8]],
+    'pays': [country, 0, 0, 0, 0, 0, 0, 0, 0],
+    'debut':[debut, 0, 0, 0, 0, 0, 0, 0, 0],
+    'fin': [fin, 0, 0, 0, 0, 0, 0, 0, 0],
+    'date' : [date, 0, 0, 0, 0, 0, 0, 0, 0]
+    }
+    # Créer le DataFrame
+    df_infos = pd.DataFrame(infos)
+    # Ouvrir le classeur Excel existant
+    template_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'GABARITCOLLABS.xlsm')
+    sheet_names = ['Institutions', 'professeurs_ETS', 'autres_ETS', 'autres', 'allResults', 'infos']
+    dataframes = [institutions_df, matches_df, other_ets_authors_df, other_authors_df, allResults_df, df_infos]
+
+    # Création de l'objet Excel, et le rendre visible en plein écran lors du processus
+    excel = win32.gencache.EnsureDispatch('Excel.Application')
+    excel.Visible = True
+    excel.WindowState = win32.constants.xlMaximized
+
+    try:
+        # Vérifier si le fichier Excel est déjà ouvert
+        for wb in excel.Workbooks:
+            if wb.FullName == template_file:
+                wb.Close(False)  # Fermer le classeur sans enregistrer les modifications
+
+        # Ouverture du fichier Excel
+        workbook = excel.Workbooks.Open(template_file)
+        workbook.Visible = True  # Rendre le classeur visible
+        workbook.WindowState = win32.constants.xlMaximized  # Mettre le classeur en plein écran 
+
+        # Enregistrer sous le nouveau nom
+        workbook.SaveAs(os.path.abspath(DOCS_PATH[0] + '/' + fileName), FileFormat=52)
+
+        # Écrire les données des DataFrames dans les feuilles de calcul
+        for sheet_name, df in zip(sheet_names, dataframes):
+            worksheet = workbook.Worksheets(sheet_name)
+            for i, col in enumerate(df.columns):
+                worksheet.Cells(1, i + 1).Value = col
+            for i, row in df.iterrows():
+                for j, value in enumerate(row):
+                    worksheet.Cells(i + 2, j + 1).Value = value
+
+        # Mise en surbrillance des lignes correspondantes dans 'professeurs_ETS'
+        professeurs_sheet = workbook.Worksheets('professeurs_ETS')
+        yellow = 65535  # Code couleur pour le jaune en format RGB   
+        for row in range(2, professeurs_sheet.UsedRange.Rows.Count + 1):
+            cell_value = professeurs_sheet.Cells(row, 1).Value  # Assurez-vous que les noms des professeurs sont en colonne 1
+            if cell_value in fuzzy_matches_df:
+                for col in range(1, professeurs_sheet.UsedRange.Columns.Count + 1):
+                    professeurs_sheet.Cells(row, col).Interior.Color = yellow  # Jaune
+
+        # Mettre la fenêtre en premier plan
+        try:
+            win32gui.SetForegroundWindow(win32gui.FindWindow(None, workbook.Name + " - Excel"))
+        except:
+            win32gui.SetForegroundWindow(win32gui.FindWindow(None, workbook.Name.split('.')[0] + " - Excel"))
+
+        # Activer la feuille 'professeurs_ETS'
+        professeurs_sheet.Activate()
+
+        #enregistrer les modifications
+        workbook.Save()
+        # Déverrouiller le fichier pour modification
+        workbook.Protect(Structure=False, Windows=False)
+        # Appel de la procédure VBA
+        nom_module = 'Module1'
+        nom_procedure = 'Workbook_Open'
+        excel.Run(f'{nom_module}.{nom_procedure}')
+
+        # Mettre à jour l'affichage pour s'assurer que l'utilisateur peut voir et interagir avec le classeur
+        excel.ScreenUpdating = True
+        excel.Interactive = True
+        workbook.Activate()
+
+    except Exception as e:
+        return f"Une erreur s'est produite : {e}"
+    return excel, workbook
+    
+
+
+def Excel_autes_collabs(fileName: str, matches_df: pd.DataFrame, other_ets_authors_df: pd.DataFrame, other_authors_df: pd.DataFrame, institutions_df: pd.DataFrame, allResults_df: pd.DataFrame, fuzzy_matches_df: pd.DataFrame):
+
+    # Remplacer l'extension par .docx
+    rapportPath = DOCS_PATH[0] + '\\' + os.path.splitext(fileName)[0] + '.docx'
+    gabaritPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'GABARITCOLLABS.docx')
+    paths = {
+    'pathToFile': [gabaritPath, rapportPath]
+    }
+    # Créer le DataFrame
+    df_paths = pd.DataFrame(paths)
+    # Ouvrir le classeur Excel existant
+    template_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'GABARITCOLLABS.xlsm')
+    sheet_names = ['Institutions', 'professeurs_ETS', 'autres_ETS', 'autres', 'allResults', 'paths']
+    dataframes = [institutions_df, matches_df, other_ets_authors_df, other_authors_df, allResults_df, df_paths]
+
+    # Création de l'objet Excel, et le rendre visible en plein écran lors du processus
+    excel = win32.gencache.EnsureDispatch('Excel.Application')
+    excel.Visible = True
+    excel.WindowState = win32.constants.xlMaximized
+
+    try:
+        # Vérifier si le fichier Excel est déjà ouvert
+        for wb in excel.Workbooks:
+            if wb.FullName == template_file:
+                wb.Close(False)  # Fermer le classeur sans enregistrer les modifications
+
+        # Ouverture du fichier Excel
+        workbook = excel.Workbooks.Open(template_file)
+        workbook.Visible = True  # Rendre le classeur visible
+        workbook.WindowState = win32.constants.xlMaximized  # Mettre le classeur en plein écran 
+
+        # Enregistrer sous le nouveau nom
+        workbook.SaveAs(os.path.abspath(DOCS_PATH[0] + '/' + fileName), FileFormat=52)
+
+        # Écrire les données des DataFrames dans les feuilles de calcul
+        for sheet_name, df in zip(sheet_names, dataframes):
+            worksheet = workbook.Worksheets(sheet_name)
+            for i, col in enumerate(df.columns):
+                worksheet.Cells(1, i + 1).Value = col
+            for i, row in df.iterrows():
+                for j, value in enumerate(row):
+                    worksheet.Cells(i + 2, j + 1).Value = value
+
+        # Mise en surbrillance des lignes correspondantes dans 'professeurs_ETS'
+        professeurs_sheet = workbook.Worksheets('professeurs_ETS')
+        yellow = 65535  # Code couleur pour le jaune en format RGB   
+        for row in range(2, professeurs_sheet.UsedRange.Rows.Count + 1):
+            cell_value = professeurs_sheet.Cells(row, 1).Value  # Assurez-vous que les noms des professeurs sont en colonne 1
+            if cell_value in fuzzy_matches_df:
+                for col in range(1, professeurs_sheet.UsedRange.Columns.Count + 1):
+                    professeurs_sheet.Cells(row, col).Interior.Color = yellow  # Jaune
+
+        # Mettre la fenêtre en premier plan
+        try:
+            win32gui.SetForegroundWindow(win32gui.FindWindow(None, workbook.Name + " - Excel"))
+        except:
+            win32gui.SetForegroundWindow(win32gui.FindWindow(None, workbook.Name.split('.')[0] + " - Excel"))
+
+        # Activer la feuille 'professeurs_ETS'
+        professeurs_sheet.Activate()
+
+        #enregistrer les modifications
+        workbook.Save()
+        # Déverrouiller le fichier pour modification
+        workbook.Protect(Structure=False, Windows=False)
+        # Appel de la procédure VBA
+        nom_module = 'Module1'
+        nom_procedure = 'Workbook_Open'
+        excel.Run(f'{nom_module}.{nom_procedure}')
+
+        # Mettre à jour l'affichage pour s'assurer que l'utilisateur peut voir et interagir avec le classeur
+        excel.ScreenUpdating = True
+        excel.Interactive = True
+        workbook.Activate()
+
+    except Exception as e:
+        print(f"Une erreur s'est produite : {e}")
+    return excel, workbook
+
+def saveInter(fileName :str, dfAllResults :pd.DataFrame, dfAuteurs :pd.DataFrame = None, dfAuteursA :pd.DataFrame = None, dfAuteursB :pd.DataFrame = None, dfInstitutions :pd.DataFrame = None):
+# def saveInter(dfAllResults :pd.DataFrame, fileName :str):
+    directory = DOCS_PATH[0] + '/' 
+    file_path = os.path.join(directory, fileName)
+    if not file_path.endswith('.xlsx'):
+        file_path += '.xlsx'
+    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+        # Écrire dfAllResults en premier
+        dfAllResults.to_excel(writer, sheet_name='allResults', index=False)
+        
+        # Écrire les autres DataFrames si elles ne sont pas None ou vides
+        if dfAuteurs is not None and not dfAuteurs.empty:
+            dfAuteurs.to_excel(writer, sheet_name='Liste des auteurs', index=False)
+        
+        if dfAuteursA is not None and not dfAuteursA.empty:
+            dfAuteursA.to_excel(writer, sheet_name='Auteurs entité A', index=False)
+        
+        if dfAuteursB is not None and not dfAuteursB.empty:
+            dfAuteursB.to_excel(writer, sheet_name='Auteurs entité B', index=False)
+        
+        if dfInstitutions is not None and not dfInstitutions.empty:
+            dfInstitutions.to_excel(writer, sheet_name='Institutions entité B', index=False)
+
+    return
+
+def getAffiliation(InstitutionId: str, keys: list):
+    query_entity = f'AF-ID({InstitutionId})'
+    search = AffiliationSearch(query=query_entity, api_key= keys[0], token= keys[1])
+    # Vérification des résultats
+    if search.affiliations is None:
+        return 'NONE'
+    else:
+        for element in search.affiliations:
+            affiliation = f"{element.name}"
+        if affiliation:
+            return affiliation
+        else: return 'NONE'
+def getAffiliationCountry(InstitutionId: str, keys: list):
+    query_entity = f'AF-ID({InstitutionId})'
+    search = AffiliationSearch(query=query_entity, api_key= keys[0], token= keys[1])
+    # Vérification des résultats
+    if search.affiliations is None:
+        return 'NONE'
+    else:
+        for element in search.affiliations:
+            affiliationCountry = f"{element.country}"
+            affiliation = f"{element.name}"
+        if affiliation:
+            return affiliation, affiliationCountry
+        else: return 'NONE'
+def getAuthorORCID(authorId: str, keys: list):
+    query_entity = f'AU-ID({authorId})'
+    search = AuthorSearch(query=query_entity, api_key= keys[0], token= keys[1])
+    # Vérification des résultats
+    if search.authors is None:
+        return 'NONE'
+    else:
+        for element in search.authors:
+            orcid = element.orcid
+        if orcid:
+            return orcid
+        else: return 'NONE'
+
+def getAbstract(EID: str, keys: list):
+    try : 
+        search = AbstractRetrieval(identifier=EID, api_key= keys[0], token= keys[1])
+        # Vérification des résultats
+        if search.abstract is None:
+            if search.description is None:
+                return 'NOT FOUND'
+            else:
+                return  search.description
+            
+        else:
+            return search.abstract
+    except:
+        return 'NONE'
