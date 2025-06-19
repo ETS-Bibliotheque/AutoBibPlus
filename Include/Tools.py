@@ -849,6 +849,13 @@ def _for_SNIP_list_10y_current_future(lst: list):
 
     return [annees, element_with_threshold_5, element_with_threshold_10, element_with_threshold_25]
 
+# Fonction générique pour trier plusieurs listes selon l'ordre croissant de la première liste
+def sort_by_first_list(*lists):
+    # Zip toutes les listes, trie selon la première, puis dézippe
+    zipped = list(zip(*lists))
+    zipped_sorted = sorted(zipped, key=lambda x: x[0])
+    return tuple([list(t) for t in zip(*zipped_sorted)])
+
 # Fonction qui retourne un DataFrame (tableau) pour le graphique SNIP du rapport
 def tab_graph_SNIP(author_id: str, years_list: list, console: pd.DataFrame, window_width: int):
     # Convertie le type toutes les années (de str/string à int/integer)
@@ -869,6 +876,8 @@ def tab_graph_SNIP(author_id: str, years_list: list, console: pd.DataFrame, wind
     # Même chose pour 3 years and current and future
     three_y_cf_scho_list = au.get_metrics_Other(metricType="ScholarlyOutput", yearRange="3yrsAndCurrentAndFuture", includedDocs='ArticlesReviews').List
 
+    ten_y_scho_list[0], ten_y_scho_list[1] = sort_by_first_list(ten_y_scho_list[0], ten_y_scho_list[1])
+    three_y_cf_scho_list[0], three_y_cf_scho_list[1] = sort_by_first_list(three_y_cf_scho_list[0], three_y_cf_scho_list[1])
     # Concaténation des listes en une seule sous le format : [[années], [ScholarlyOutputs], [Top5%], [Top10%], [Top25%]]
     ten_y_cf_list = [_replace_none_with_zero(item1 + item2[-2:]) for item1, item2 in zip(ten_y_scho_list, three_y_cf_scho_list)] + [_replace_none_with_zero(item1 + item2[-2:]) for item1, item2 in zip(ten_y_cf_list, three_y_cf_list)][-3:]
 
@@ -930,6 +939,12 @@ def tab_graph_Collab(author_id: str, years_list: list, console: pd.DataFrame, wi
     ten_y_cf_list = _for_Collab_list_10y_current_future(au._get_metrics_rawdata(metricType='Collaboration', yearRange='10yrs'))
     # Même chose pour 3 years and current and future
     three_y_cf_list = _for_Collab_list_10y_current_future(au._get_metrics_rawdata(metricType='Collaboration', yearRange='3yrsAndCurrentAndFuture'))
+    ten_y_cf_list[0], ten_y_cf_list[1], ten_y_cf_list[2], ten_y_cf_list[3], ten_y_cf_list[4] = sort_by_first_list(
+        ten_y_cf_list[0], ten_y_cf_list[1], ten_y_cf_list[2], ten_y_cf_list[3], ten_y_cf_list[4]
+    )
+    three_y_cf_list[0], three_y_cf_list[1], three_y_cf_list[2], three_y_cf_list[3], three_y_cf_list[4] = sort_by_first_list(
+        three_y_cf_list[0], three_y_cf_list[1], three_y_cf_list[2], three_y_cf_list[3], three_y_cf_list[4]
+    )
 
     # Concaténation des listes en une seule sous le format : [[années], [Inst], [Inter], [Nat], [Aucune]]
     ten_y_cf_list = [_replace_none_with_zero(item1 + item2[-2:]) for item1, item2 in zip(ten_y_cf_list, three_y_cf_list)]
